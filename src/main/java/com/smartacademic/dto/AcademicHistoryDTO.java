@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
+/** Một mục trong hồ sơ học tập của sinh viên (kết quả JOIN phức tạp). */
 @Data
 public class AcademicHistoryDTO {
 

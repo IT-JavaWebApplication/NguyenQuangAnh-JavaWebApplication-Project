@@ -4,7 +4,7 @@ import com.smartacademic.entity.MentoringSession;
 
 import java.util.concurrent.CompletableFuture;
 
-// Gửi email bất đồng bộ (Async) để không chặn luồng request chính. */
+/** Gửi email bất đồng bộ (Async) để không chặn luồng request chính. */
 public interface EmailService {
 
     CompletableFuture<Boolean> sendBookingConfirmation(String toEmail, String studentName, MentoringSession session);

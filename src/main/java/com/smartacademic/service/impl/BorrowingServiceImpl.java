@@ -39,10 +39,11 @@ public class BorrowingServiceImpl implements BorrowingService {
     @Autowired
     private EmailService emailService;
 
-
-     //Giảng viên đánh giá buổi tư vấn + (tuỳ chọn) tạo phiếu mượn thiết bị.
-     //Toàn bộ thao tác (update session, persist evaluation, persist phiếu mượn) nằm trong 1 transaction — lỗi giữa chừng sẽ rollback hết.
-
+    /**
+     * Giảng viên đánh giá buổi tư vấn + (tuỳ chọn) tạo phiếu mượn thiết bị.
+     * Toàn bộ thao tác (update session, persist evaluation, persist phiếu mượn)
+     * nằm trong 1 transaction — lỗi giữa chừng sẽ rollback hết.
+     */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void evaluateAndAssignEquipment(Long lecturerId, EvaluationDTO dto) {
@@ -104,9 +105,11 @@ public class BorrowingServiceImpl implements BorrowingService {
             emailService.sendEvaluationReady(student.getEmail(), name, session);
         }
     }
-     //Admin xác nhận xuất kho: check toàn bộ tồn kho trước, đủ thì trừ và chuyển
-     //status DISPATCHED; thiếu thì throw để rollback và báo lỗi tổng hợp.
 
+    /**
+     * Admin xác nhận xuất kho: check toàn bộ tồn kho trước, đủ thì trừ và chuyển
+     * status DISPATCHED; thiếu thì throw để rollback và báo lỗi tổng hợp.
+     */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void confirmDispatch(Long borrowingRecordId, Long adminId) {

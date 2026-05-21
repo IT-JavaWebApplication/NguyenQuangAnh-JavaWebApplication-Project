@@ -10,7 +10,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-
+/**
+ * Endpoint chung cho việc đổi mật khẩu - dùng được cho mọi role.
+ * Sau khi đổi, redirect về trang profile tương ứng của role đó.
+ */
 @Controller
 @RequestMapping("/profile")
 public class ProfileController {

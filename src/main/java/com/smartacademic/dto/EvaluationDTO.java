@@ -25,6 +25,7 @@ public class EvaluationDTO {
     private String comments;
     private String recommendations;
 
+    // Map<equipmentId, quantity> - danh sách thiết bị chỉ định
     private List<Long> equipmentIds;
     private List<Integer> equipmentQuantities;
 }

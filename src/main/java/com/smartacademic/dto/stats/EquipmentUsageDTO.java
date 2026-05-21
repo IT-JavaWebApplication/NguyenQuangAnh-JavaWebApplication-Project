@@ -4,9 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
- //thiết bị được mượn nhiều nhất.
-
+/**
+ * Top thiết bị được mượn nhiều nhất.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

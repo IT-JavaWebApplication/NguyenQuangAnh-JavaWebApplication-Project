@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-//Top giảng viên theo số buổi tư vấn. */
+/** Top giảng viên theo số buổi tư vấn. */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

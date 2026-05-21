@@ -35,9 +35,10 @@ public class Equipment {
     @Column(length = 50)
     private String unit = "Cái";
 
-     //Phí đặt cọc bắt buộc khi mượn thiết bị này (VND).
-     //0 = thiết bị không yêu cầu đặt cọc.
-
+    /**
+     * Phí đặt cọc bắt buộc khi mượn thiết bị này (VND).
+     * 0 = thiết bị không yêu cầu đặt cọc.
+     */
     @Column(name = "deposit_amount", nullable = false, precision = 12, scale = 0)
     private BigDecimal depositAmount = BigDecimal.ZERO;
 

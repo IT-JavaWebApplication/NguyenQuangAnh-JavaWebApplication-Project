@@ -4,9 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
- //Số buổi tư vấn theo tháng (12 tháng gần nhất) - dữ liệu cho biểu đồ line/bar.
-
+/**
+ * Số buổi tư vấn theo tháng (12 tháng gần nhất) - dữ liệu cho biểu đồ line/bar.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

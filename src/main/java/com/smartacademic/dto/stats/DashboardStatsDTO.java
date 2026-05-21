@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-//Tổng hợp số liệu cho Admin Dashboard.
+/** Tổng hợp số liệu cho Admin Dashboard. */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -15,7 +15,7 @@ public class DashboardStatsDTO {
     private long totalStudents;
     private long totalLecturers;
     private long totalEquipments;
-    //Tổng số thiết bị (theo quantity) đang được mượn.
+    /** Tổng số thiết bị (theo quantity) đang được mượn. */
     private long totalEquipmentsBorrowed;
     private long pendingDispatchCount;
     private long overdueCount;
@@ -24,6 +24,7 @@ public class DashboardStatsDTO {
     private long pendingSessions;
     private double avgSkillScore;
     private double avgAttitudeScore;
+
     private List<TopLecturerDTO> topLecturers;
     private List<EquipmentUsageDTO> topEquipments;
     private List<MonthlySessionDTO> sessionsByMonth;

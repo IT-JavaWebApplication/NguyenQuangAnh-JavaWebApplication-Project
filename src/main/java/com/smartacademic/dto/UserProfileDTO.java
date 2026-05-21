@@ -19,11 +19,12 @@ public class UserProfileDTO {
     private String className;
     private String avatarUrl;
 
+    // Dành cho Giảng viên
     private String specialization;
     private String bio;
     private Long departmentId;
 
-    //Giảng viên: phí cho 1 buổi tư vấn (VND). 0 = miễn phí.
+    /** Giảng viên: phí cho 1 buổi tư vấn (VND). 0 = miễn phí. */
     @DecimalMin(value = "0", message = "Phí buổi tư vấn không được âm")
     private BigDecimal sessionFee;
 }
