@@ -40,7 +40,6 @@ public class BorrowingRecord {
     @Column(name = "returned_at")
     private LocalDateTime returnedAt;
 
-    /** Hạn trả thiết bị; cron job hằng ngày sẽ chuyển status sang OVERDUE nếu quá hạn. */
     @Column(name = "due_date")
     private LocalDate dueDate;
 

@@ -65,9 +65,7 @@ public class AppConfig {
         return http.build();
     }
 
-    /**
-     * BCrypt (strength 12). Cũng chấp nhận mật khẩu plain-text (chỉ dùng cho dev / migration cũ).
-     */
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         BCryptPasswordEncoder delegate = new BCryptPasswordEncoder(12);

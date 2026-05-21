@@ -17,12 +17,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-/**
- * Seed các user / lecturer / mentoring session / evaluation / borrowing data demo.
- * Phải chạy sau khi data.sql đã insert departments + equipments.
- *
- * Mật khẩu mặc định cho tất cả user demo: <b>password123</b>
- */
+
 @Component
 @Order(1)
 public class DataSeeder implements CommandLineRunner {
@@ -157,7 +152,7 @@ public class DataSeeder implements CommandLineRunner {
         l.setLecturerCode(code);
         l.setSpecialization(specialization);
         l.setBio(bio);
-        l.setSessionFee(new java.math.BigDecimal("100000")); // 100,000 VND/buổi
+        l.setSessionFee(new java.math.BigDecimal("100000"));
         session.persist(l);
     }
 

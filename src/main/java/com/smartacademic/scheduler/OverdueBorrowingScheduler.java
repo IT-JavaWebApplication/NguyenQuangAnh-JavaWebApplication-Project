@@ -16,11 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 
-/**
- * Cron job quét phiếu mượn DISPATCHED có due_date < hôm nay, đánh dấu OVERDUE
- * và gửi email cảnh báo ngầm cho sinh viên. Có thể tắt qua property
- * {@code app.scheduling.enabled=false}.
- */
+
 @Component
 public class OverdueBorrowingScheduler {
 
@@ -77,7 +73,7 @@ public class OverdueBorrowingScheduler {
         }
     }
 
-    /** Mỗi 30 phút log số phiếu chờ cấp phát để admin nắm tình hình. */
+    //Mỗi 30 phút log số phiếu chờ cấp phát để admin nắm tình hình.
     @Scheduled(fixedDelay = 30 * 60 * 1000, initialDelay = 60 * 1000)
     @Transactional(readOnly = true)
     public void monitorPending() {

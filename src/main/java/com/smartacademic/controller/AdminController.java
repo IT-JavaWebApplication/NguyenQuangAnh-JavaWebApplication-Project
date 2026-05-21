@@ -60,8 +60,6 @@ public class AdminController {
         return "admin/statistics";
     }
 
-    /** Đẩy List nguyên gốc xuống view; Thymeleaf th:inline="javascript" sẽ serialize
-     *  thành mảng JS hợp lệ (tránh double-escape khiến Chart.js nhận chuỗi). */
     private void addChartData(Model model, DashboardStatsDTO stats) {
         List<MonthlySessionDTO> months = stats.getSessionsByMonth() != null
                 ? stats.getSessionsByMonth() : List.of();

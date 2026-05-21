@@ -39,13 +39,12 @@ public class Payment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "payer_id", nullable = false)
     private User payer;
-
-    /** Phí buổi tư vấn: gắn vào MentoringSession. */
+    //Phí buổi tư vấn: gắn vào MentoringSession.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "session_id")
     private MentoringSession session;
 
-    /** Phí đặt cọc thiết bị: gắn vào BorrowingRecord. */
+    //Phí đặt cọc thiết bị: gắn vào BorrowingRecord.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "borrowing_record_id")
     private BorrowingRecord borrowingRecord;
@@ -72,11 +71,10 @@ public class Payment {
     @Column(name = "gateway_txn_id", length = 100)
     private String gatewayTxnId;
 
-    /** Response code từ gateway: 00 = thành công. */
+
     @Column(name = "response_code", length = 10)
     private String responseCode;
 
-    /** Thông điệp giải thích kết quả. */
     @Column(name = "response_message", length = 500)
     private String responseMessage;
 

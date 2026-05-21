@@ -9,9 +9,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
 
-/**
- * CORE-02: Kiểm soát truy cập dựa trên role
- */
+
+ //CORE-02: Kiểm soát truy cập dựa trên role
+
 public class AuthFilter implements Filter {
 
     @Override
