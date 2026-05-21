@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head></head>
+<body>
+
+<div th:fragment="sidebar(activeTab)">
+    <aside th:fragment="sidebar(activePage)" class="admin-sidebar">
+        <div style="padding: 32px 24px;">
+            <h2 style="font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.4rem;">Rikkei Academy</h2>
+        </div>
+
+        <nav style="flex: 1; padding: 0 16px;">
+            <ul style="list-style: none;">
+                <li style="margin-bottom: 8px;">
+                    <a th:href="@{/admin/dashboard}"
+                       class="menu-item" th:classappend="${activePage == 'dashboard' ? 'active' : ''}">
+                        <i class="fa-solid fa-chart-pie"></i> Dashboard
+                    </a>
+                </li>
+                <li style="margin-bottom: 8px;">
+                    <a th:href="@{/admin/users}"
+                       class="menu-item" th:classappend="${activePage == 'users' ? 'active' : ''}">
+                        <i class="fa-solid fa-users"></i> Quản lý tài khoản
+                    </a>
+                </li>
+                <li style="margin-bottom: 8px;">
+                    <a th:href="@{/admin/equipment}"
+                       class="menu-item" th:classappend="${activePage == 'equipment' ? 'active' : ''}">
+                        <i class="fa-solid fa-boxes-stacked"></i> Quản lý thiết bị
+                    </a>
+                </li>
+                <li>
+                    <a th:href="@{/admin/borrowing}"
+                       class="menu-item" th:classappend="${activePage == 'borrowing' ? 'active' : ''}">
+                        <i class="fa-solid fa-clipboard-list"></i> Phiếu mượn
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+</div>
+
+</body>
+</html>

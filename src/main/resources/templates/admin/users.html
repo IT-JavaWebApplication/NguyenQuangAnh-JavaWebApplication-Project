@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Quản lý tài khoản | Rikkei Academy</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+</head>
+<body class="admin-layout">
+
+<aside th:replace="~{fragments/admin_sidebar :: sidebar('users')}"></aside>
+<div class="admin-main">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Hồ Sơ Thành Viên Hệ Thống</h1>
+            <p class="text-sm text-slate-500 mt-1">Phân quyền, kiểm soát tài khoản Giảng viên, Sinh viên và Quản trị viên</p>
+        </div>
+        <div class="flex gap-2">
+            <input type="text" placeholder="Tìm kiếm tài khoản..." class="border border-slate-200 rounded-xl px-4 py-2 text-sm w-64 focus:outline-none focus:ring-2 focus:ring-blue-100" />
+        </div>
+    </div>
+
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <table class="w-full text-left border-collapse">
+            <thead>
+            <tr class="bg-slate-50/75 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <th class="px-6 py-4">Họ và Tên</th>
+                <th class="px-6 py-4">Tài khoản truy cập</th>
+                <th class="px-6 py-4">Phân quyền Role</th>
+                <th class="px-6 py-4 text-right">Trạng thái hoạt động</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+            <tr th:each="u : ${users}" class="data-table-row hover:bg-slate-50/50 transition-colors">
+                <td class="px-6 py-4 font-bold text-slate-900" th:text="${u.fullName}">Nguyễn Hoàng Long</td>
+                <td class="px-6 py-4">
+                    <div class="font-medium text-blue-600" th:text="${u.username}">longnh01</div>
+                    <div class="text-xs text-slate-400" th:text="${u.email}">longnh@rikkei.edu.vn</div>
+                </td>
+                <td class="px-6 py-4">
+                    <span class="badge" th:classappend="${u.role?.name() == 'ADMIN' ? 'bg-danger' : (u.role?.name() == 'LECTURER' ? 'bg-info' : 'bg-success')}" th:text="${u.role}">STUDENT</span>
+                </td>
+                <td class="px-6 py-4 text-right">
+                        <span class="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Active
+                        </span>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(users)}">
+                <td colspan="4" class="px-6 py-12 text-center text-slate-400">Không có dữ liệu người dùng.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,76 @@
+@layer base {
+    :root {
+        --surface-navy: #DC2626; /* Đã đồng bộ sang đỏ */
+        --bg-app: #F8FAFC;
+        --primary-blue: #0052cc;
+        --success-green: #00C853;
+        --warning-amber: #FFAB00;
+        --error-red: #F44336;
+    }
+}
+
+/* Custom Scrollbar cho trải nghiệm UI mượt mà */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+}
+
+/* Hiệu ứng chuyển động mượt cho các nút và dòng trong bảng */
+.data-table-row {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.data-table-row:hover {
+    background-color: #F1F5F9;
+    transform: translateY(-1px);
+}
+
+/* Định dạng Badge chung chuẩn hoá */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.bg-success { background-color: rgba(0, 200, 83, 0.1); color: #00C853; }
+.bg-warning { background-color: rgba(255, 171, 0, 0.1); color: #FFAB00; }
+.bg-danger { background-color: rgba(244, 67, 54, 0.1); color: #F44336; }
+.bg-info { background-color: rgba(0, 82, 204, 0.1); color: #0052cc; }
+.bg-primary { background-color: rgba(147, 51, 234, 0.1); color: #9333EA; }
+
+/* CSS bổ sung để đảm bảo thanh bên của trang cũ thẳng hàng dọc */
+aside.fixed {
+    display: flex !important;
+    flex-direction: column !important;
+}
+aside.fixed nav {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px;
+}
+.sidebar-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px;
+    padding: 12px 16px;
+    color: white !important;
+    border-radius: 12px;
+    transition: all 0.2s;
+}
+.sidebar-item:hover, .sidebar-item.active {
+    background-color: rgba(255,255,255,0.15) !important;
+}

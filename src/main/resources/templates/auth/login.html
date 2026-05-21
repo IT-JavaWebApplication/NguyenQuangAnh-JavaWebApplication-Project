@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Rikkei Academy | Secure Login</title>
+
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@100..1000&family=Syne:wght@400..800&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" th:href="@{/css/auth.css}">
+
+    <style>
+        .bg-bg-app { background-color: #f8fafc; }
+        .text-on-surface-variant { color: #64748b; }
+        .border-border-light { border-color: #e2e8f0; }
+        .bg-surface-container-lowest { background-color: #ffffff; }
+        .text-on-surface { color: #0f172a; }
+        .text-primary { color: #0055ff; }
+        .bg-primary { background-color: #0055ff; }
+        .border-outline { border-color: #cbd5e1; }
+    </style>
+</head>
+
+<body class="bg-bg-app">
+
+<div class="auth-container relative overflow-hidden flex flex-col md:flex-row min-h-screen items-center justify-center p-4">
+    <div class="w-full max-w-md bg-surface-container-lowest p-8 rounded-xl shadow-md border border-border-light">
+
+        <div class="mb-6 text-center">
+            <h2 class="text-2xl font-bold text-on-surface">Sign In</h2>
+            <p class="text-sm text-on-surface-variant mt-1">Access to your academic portal</p>
+        </div>
+
+        <div th:if="${param.error}" class="mb-4 p-4 bg-red-50 border-l-4 border-red-500 rounded text-red-700 text-sm font-medium">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[18px]">error</span>
+                <span>Tài khoản hoặc mật khẩu không chính xác!</span>
+            </div>
+        </div>
+
+        <form th:action="@{/auth/login}" method="POST" class="space-y-4">
+
+            <div class="flex flex-col gap-1">
+                <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Username</label>
+                <div class="relative">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">person</span>
+                    <input type="text" name="username" class="w-full pl-12 pr-4 py-3 bg-surface-container-lowest border border-border-light rounded-lg text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="Nhập username" required />
+                </div>
+            </div>
+
+            <div class="flex flex-col gap-1">
+                <label class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider">Password</label>
+                <div class="relative">
+                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">lock</span>
+                    <input type="password" name="password" class="w-full pl-12 pr-4 py-3 bg-surface-container-lowest border border-border-light rounded-lg text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all" placeholder="••••••••" required />
+                </div>
+            </div>
+
+            <button type="submit" class="w-full py-3.5 bg-primary text-white font-bold rounded-lg shadow hover:bg-blue-700 active:scale-[0.99] transition-all flex items-center justify-center gap-2">
+                Sign In
+                <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+            </button>
+        </form>
+
+        <div class="mt-6 pt-6 border-t border-border-light text-center">
+            <p class="text-sm text-on-surface-variant">
+                New to the Academy?
+                <a th:href="@{/auth/register}" class="text-primary font-semibold hover:underline ml-1">Create an account</a>
+            </p>
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

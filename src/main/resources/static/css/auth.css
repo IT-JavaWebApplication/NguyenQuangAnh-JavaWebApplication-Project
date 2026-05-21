@@ -1,0 +1,49 @@
+:root {
+    --rikkei-blue: #0052cc;
+    --surface-navy: #0F1F3D;
+}
+
+body {
+    font-family: 'DM Sans', sans-serif;
+    background-color: #F5F7FA;
+    overflow: hidden;
+    margin: 0;
+}
+
+.auth-container {
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+}
+
+.glass-card {
+    background: rgb(194 50 50 / 0.95);
+    backdrop-filter: blur(10px);
+    border: 1px solid #E8EDF5;
+    box-shadow: 0 8px 32px rgba(0, 82, 204, 0.08);
+}
+
+.input-group:focus-within label {
+    color: var(--rikkei-blue);
+}
+
+.custom-checkbox:checked {
+    background-color: var(--rikkei-blue);
+    border-color: var(--rikkei-blue);
+}
+
+/* Ambient Background Effect - Đã chuyển thành CSS Animation thuần thay cho JS */
+.ambient-glow {
+    position: absolute;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(0, 82, 204, 0.05) 0%, rgba(245, 247, 250, 0) 70%);
+    border-radius: 50%;
+    z-index: -1;
+    animation: drift 10s infinite alternate ease-in-out;
+}
+
+@keyframes drift {
+    0% { transform: translate(0, 0); }
+    100% { transform: translate(30px, -40px); }
+}

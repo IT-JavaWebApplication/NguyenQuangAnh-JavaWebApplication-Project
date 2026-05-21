@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Phiếu Mượn Thiết Bị | Rikkei Academy</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+  <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+</head>
+<body class="admin-layout">
+
+<aside th:replace="~{fragments/admin_sidebar :: sidebar('borrowing')}"></aside>
+<div class="admin-main">
+  <div class="mb-8">
+    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Xét Duyệt & Cấp Phát Thiết Bị</h1>
+    <p class="text-sm text-slate-500 mt-1">Điều phối lịch trình bàn giao, hoàn trả thiết bị vật tư thực hành</p>
+  </div>
+
+  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+    <table class="w-full text-left border-collapse">
+      <thead>
+      <tr class="bg-slate-50/75 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider">
+        <th class="px-6 py-4">Sinh Viên</th>
+        <th class="px-6 py-4">Buổi Hẹn Đăng Ký</th>
+        <th class="px-6 py-4">Ngày yêu cầu</th>
+        <th class="px-6 py-4">Trạng thái</th>
+        <th class="px-6 py-4 text-right">Thao tác xử lý</th>
+      </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-50">
+      <tr th:each="br : ${borrowingRecords}" class="data-table-row hover:bg-slate-50/50 transition-colors">
+        <td class="px-6 py-4">
+          <div class="font-bold text-slate-900" th:text="${br.mentoringSession?.student?.fullName}">Trần Minh Triết</div>
+          <div class="text-xs text-slate-400" th:text="${br.mentoringSession?.student?.username}">SV88910</div>
+        </td>
+        <td class="px-6 py-4 text-slate-700 font-medium">
+          <span th:text="${'Lab Session - Slot ' + br.mentoringSession?.timeSlot}">Slot 2</span>
+          <div class="text-xs text-slate-400" th:text="${'GV: ' + br.mentoringSession?.lecturer?.fullName}">Dr. Thorne</div>
+        </td>
+        <td class="px-6 py-4 text-slate-500 text-sm" th:text="${#temporals.format(br.issuedAt, 'dd/MM/yyyy HH:mm')}">18/05/2026</td>
+        <td class="px-6 py-4">
+          <span class="badge" th:classappend="${br.status?.name() == 'RETURNED' ? 'bg-success' : (br.status?.name() == 'PENDING' ? 'bg-warning' : (br.status?.name() == 'APPROVED' ? 'bg-info' : 'bg-danger'))}" th:text="${br.status}">PENDING</span>
+        </td>
+        <td class="px-6 py-4 text-right flex justify-end gap-2">
+          <form th:if="${br.status?.name() == 'APPROVED'}" th:action="@{/admin/borrowing/{id}/issue(id=${br.id})}" method="post">
+            <button type="submit" class="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-all">
+              <span class="material-symbols-outlined text-[16px]">outbox</span> Xuất kho
+            </button>
+          </form>
+          <form th:if="${br.status?.name() == 'ISSUED'}" th:action="@{/admin/borrowing/{id}/return(id=${br.id})}" method="post">
+            <button type="submit" class="inline-flex items-center gap-1 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-all">
+              <span class="material-symbols-outlined text-[16px]">move_to_inbox</span> Thu hồi
+            </button>
+          </form>
+        </td>
+      </tr>
+      <tr th:if="${#lists.isEmpty(borrowingRecords)}">
+        <td colspan="5" class="px-6 py-12 text-center text-slate-400">Không có đơn yêu cầu mượn thiết bị nào hiện tại.</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+</body>
+</html>

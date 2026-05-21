@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<!-- File: src/main/resources/templates/lecturer/dashboard.html -->
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Dashboard Giảng viên — LabNexus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/common.css}"/>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+</head>
+<body>
+<div class="app-shell">
+
+    <aside class="sidebar" th:insert="~{fragments/layout :: sidebar('dashboard', 'LECTURER')}"></aside>
+
+    <header class="topbar">
+        <div>
+            <div class="topbar-title">Daily Overview</div>
+            <div class="topbar-subtitle">Manage lab requests, equipment maintenance, and student evaluations.</div>
+        </div>
+        <div class="topbar-spacer"></div>
+        <button class="btn btn-outline btn-sm"><i class="fa-solid fa-download"></i> Export Data</button>
+        <a th:href="@{/lecturer/evaluation}" class="btn btn-primary btn-sm">
+            <i class="fa-solid fa-plus"></i> New Log
+        </a>
+        <div class="topbar-avatar"
+             th:text="${#strings.substring((currentUser?.fullName ?: 'L'), 0, 1)}">D</div>
+    </header>
+
+    <main class="main-content fade-in">
+
+        <!-- Flash -->
+        <div th:if="${success}" class="alert alert-success mb-16">
+            <i class="fa-solid fa-circle-check"></i> <span th:text="${success}"></span>
+        </div>
+
+        <!-- Stat cards -->
+        <div class="stats-grid mb-24">
+            <div class="stat-card blue">
+                <div class="stat-icon"><i class="fa-regular fa-calendar"></i></div>
+                <div class="stat-label">Working Hours</div>
+                <div class="stat-value" th:text="${workingHours ?: 12}">12</div>
+                <div class="stat-sub text-muted">This week</div>
+            </div>
+            <div class="stat-card amber">
+                <div class="stat-icon"><i class="fa-regular fa-clock"></i></div>
+                <div class="stat-label">Pending Sessions</div>
+                <div class="stat-value" th:text="${pendingCount ?: 0}">08</div>
+                <div class="stat-sub"><span class="text-amber">Awaiting confirmation</span></div>
+            </div>
+            <div class="stat-card green">
+                <div class="stat-icon"><i class="fa-solid fa-percent"></i></div>
+                <div class="stat-label">Completion Rate</div>
+                <div class="stat-value" th:text="${completionRate ?: 94} + '%'">94%</div>
+                <div class="stat-sub"><span class="stat-trend up"><i class="fa-solid fa-arrow-up"></i> Best this year</span></div>
+            </div>
+            <div class="stat-card navy">
+                <div class="stat-icon"><i class="fa-solid fa-upload"></i></div>
+                <div class="stat-label">Reports Uploaded</div>
+                <div class="stat-value" th:text="${reportsCount ?: 0}">0</div>
+                <div class="stat-sub">This month</div>
+            </div>
+        </div>
+
+        <div class="grid-2-1">
+
+            <!-- Pending Appointments -->
+            <div>
+                <div class="card mb-16">
+                    <div class="card-header">
+                        <span class="card-title"><i class="fa-regular fa-calendar-clock" style="margin-right:6px;color:var(--blue-2)"></i>Pending Appointments</span>
+                        <a th:href="@{/lecturer/appointments}" class="btn btn-outline btn-sm">View All</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <!-- Session rows -->
+                        <div th:each="s : ${pendingSessions}"
+                             class="d-flex align-center justify-between">
+                            <div class="d-flex align-center gap-12">
+                                <div class="table-avatar"
+                                     th:text="${#strings.substring((s.student?.fullName ?: 'S'), 0, 1)}">S</div>
+                                <div>
+                                    <div class="fw-600 text-sm" th:text="${s.student?.fullName}">Student Name</div>
+                                    <div class="text-xs text-muted"
+                                         th:text="${#temporals.format(s.sessionDate,'dd/MM/yyyy')} + ' · ' + ${#temporals.format(s.startTime,'HH:mm')} + '–' + ${#temporals.format(s.endTime,'HH:mm')}">
+                                        01/10 · 09:00–10:00</div>
+                                    <div class="text-xs text-muted" th:text="${s.labType?.name}">Lab A-101</div>
+                                </div>
+                            </div>
+                            <div class="d-flex gap-8">
+                                <form th:action="@{/lecturer/sessions/{id}/confirm(id=${s.id})}" method="post">
+                                    <button type="submit" class="btn-icon" title="Confirm" style="color:var(--green)">
+                                        <i class="fa-solid fa-check"></i>
+                                    </button>
+                                </form>
+                                <form th:action="@{/lecturer/sessions/{id}/cancel(id=${s.id})}" method="post">
+                                    <button type="submit" class="btn-icon" title="Cancel" style="color:var(--red)">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        <div th:if="${#lists.isEmpty(pendingSessions)}" class="empty-state">
+                            <div class="empty-icon"><i class="fa-regular fa-calendar-check"></i></div>
+                            <p>Không có lịch hẹn đang chờ</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lab Activity Log -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Lab Activity Log</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="timeline-item" style="padding:14px 20px 14px;">
+                            <div class="timeline-dot blue"><i class="fa-solid fa-check fa-xs"></i></div>
+                            <div>
+                                <div class="text-sm fw-600">Activity Audit Completed</div>
+                                <div class="text-xs text-muted">11:00 compelted with 87/100 sentences</div>
+                            </div>
+                        </div>
+                        <div class="timeline-item" style="padding:0 20px 14px;">
+                            <div class="timeline-dot amber"><i class="fa-solid fa-triangle-exclamation fa-xs"></i></div>
+                            <div>
+                                <div class="text-sm fw-600">Equipment Maintenance</div>
+                                <div class="text-xs text-muted">Spectrometer — CentroFuge needs repair</div>
+                            </div>
+                        </div>
+                        <div class="timeline-item" style="padding:0 20px 14px;">
+                            <div class="timeline-dot green"><i class="fa-solid fa-user fa-xs"></i></div>
+                            <div>
+                                <div class="text-sm fw-600">New Student Logged</div>
+                                <div class="text-xs text-muted" th:text="'Dr. Thomas in ' + (${completedCount} ?: 0) + ' Crystallography Study That'">Dr. Thomas in 4 sessions</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right column -->
+            <div style="display:flex;flex-direction:column;gap:16px;">
+
+                <!-- Lab Evaluation / Score Ring -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Lab Evaluation</span>
+                    </div>
+                    <div class="card-body" style="text-align:center;">
+                        <!-- Clean Lab badge -->
+                        <div style="background:rgba(244,67,54,0.08);border-radius:8px;padding:6px 12px;display:inline-block;margin-bottom:12px;">
+              <span style="color:var(--red);font-size:.78rem;font-weight:700;">
+                <i class="fa-solid fa-circle-exclamation"></i> CLEAN LAB
+              </span>
+                        </div>
+                        <div class="rating-display" th:text="${avgScore != null} ? ${#numbers.formatDecimal(avgScore,1,1)} : '4.5'">4.5</div>
+                        <div class="stars">★★★★☆</div>
+                        <div class="text-xs text-muted mt-8">Clean Room A-1 — Average Rating</div>
+
+                        <div class="divider"></div>
+
+                        <form th:action="@{/lecturer/evaluations/submit}" method="post" class="text-left">
+                            <input type="hidden" name="sessionId" th:value="${nextSessionId}"/>
+                            <div class="form-group">
+                                <label class="form-label">Score (1–10)</label>
+                                <input type="number" class="form-control" name="score" min="1" max="10" placeholder="8"/>
+                            </div>
+                            <div class="form-group mb-0">
+                                <label class="form-label">Comment</label>
+                                <textarea class="form-control" name="comment" rows="2" placeholder="Brief evaluation note..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100 mt-16" style="justify-content:center;">
+                                <i class="fa-solid fa-paper-plane"></i> Submit Evaluation
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Quick equipment check -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-title">Equipment Status</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div th:each="equipment : ${equipments}"
+                             style="padding:10px 16px;border-bottom:1px solid var(--gray-2);"
+                             class="d-flex align-center justify-between">
+                            <div>
+                                <div class="text-sm fw-600" th:text="${equipment.name}">Equipment</div>
+                                <div class="text-xs text-muted" th:text="${equipment.id}">EQ-001</div>
+                            </div>
+                            <span class="badge"
+                                  th:classappend="${equipment.totalQuantity > 5} ? 'badge-green' : (${equipment.totalQuantity > 0} ? 'badge-amber' : 'badge-red')"
+                                  th:text="${equipment.totalQuantity} + ' ' + ${equipment.name}">5 cái</span>
+                        </div>
+                        <div th:if="${#lists.isEmpty(equipmentList)}" class="empty-state">
+                            <p>Không có thiết bị</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </main>
+</div>
+</body>
+</html>

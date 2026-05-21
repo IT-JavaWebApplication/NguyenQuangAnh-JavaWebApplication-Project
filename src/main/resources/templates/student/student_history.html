@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Lịch sử học thuật — Rikkei Academy</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+<div class="app-shell">
+    <div class="main-layout" style="margin-left:0; padding:40px;">
+
+        <div class="tabs">
+            <a th:href="@{/student/history(status='ALL')}" class="tab-link" th:classappend="${currentStatus == 'ALL'} ? 'active' : ''">Tất cả</a>
+            <a th:href="@{/student/history(status='PENDING')}" class="tab-link" th:classappend="${currentStatus == 'PENDING'} ? 'active' : ''">Chờ xác nhận</a>
+            <a th:href="@{/student/history(status='CONFIRMED')}" class="tab-link" th:classappend="${currentStatus == 'CONFIRMED'} ? 'active' : ''">Đã xác nhận</a>
+            <a th:href="@{/student/history(status='COMPLETED')}" class="tab-link" th:classappend="${currentStatus == 'COMPLETED'} ? 'active' : ''">Hoàn thành</a>
+            <a th:href="@{/student/history(status='CANCELLED')}" class="tab-link" th:classappend="${currentStatus == 'CANCELLED'} ? 'active' : ''">Đã hủy</a>
+        </div>
+
+        <div class="card">
+            <table>
+                <thead>
+                <tr>
+                    <th>Giảng viên</th>
+                    <th>Ngày</th>
+                    <th>Giờ</th>
+                    <th>Trạng thái</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="s : ${sessions}">
+                    <td th:text="${s.lecturer?.fullName}">Dr. Mitchell</td>
+                    <td th:text="${s.sessionDate}">24/10/2025</td>
+                    <td th:text="${s.startTime} + ' - ' + ${s.endTime}">09:00 - 10:00</td>
+                    <td>
+                            <span class="badge"
+                                  th:classappend="${s.status.name() == 'COMPLETED' ? 'badge-completed' : (s.status.name() == 'PENDING' ? 'badge-published' : 'badge-verified')}"
+                                  th:text="${s.status}">STATUS</span>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(sessions)}">
+                    <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 30px;">Không có lịch hẹn nào thuộc trạng thái này.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

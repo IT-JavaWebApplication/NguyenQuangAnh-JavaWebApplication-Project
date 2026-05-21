@@ -1,0 +1,290 @@
+/* --- 1. RESET & BASE --- */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary-red: #DC2626;
+    --primary-red-hover: #B91C1C;
+    --bg-app: #F8FAFC;
+    --text-main: #0F172A;
+    --text-muted: #64748B;
+    --white: #FFFFFF;
+    --border: #E2E8F0;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    font-family: 'DM Sans', sans-serif;
+    background-color: var(--bg-app);
+}
+
+.admin-layout {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* --- 2. SIDEBAR FIXED --- */
+.admin-sidebar {
+    width: 260px;
+    background-color: var(--primary-red);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    position: fixed; /* Cố định sidebar */
+    height: 100vh;
+    left: 0;
+    top: 0;
+    z-index: 100;
+}
+
+/* --- 3. MAIN CONTENT --- */
+.admin-main {
+    flex: 1;
+    margin-left: 260px; /* Đẩy nội dung sang phải để không bị sidebar đè */
+    padding: 32px;
+    background-color: var(--bg-app);
+}
+
+/* --- 4. HEADER (TASKBAR) --- */
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    background: white;
+    padding: 16px 24px;
+    border-radius: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid var(--border);
+}
+
+.header-title h1 {
+    font-size: 1.5rem;
+    color: var(--text-main);
+    font-weight: 700;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.user-profile-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    background-color: var(--primary-red);
+    color: white;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+}
+
+.btn-logout {
+    padding: 8px 16px;
+    background-color: #FEE2E2;
+    color: #DC2626;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.2s;
+}
+
+.btn-logout:hover {
+    background-color: #DC2626;
+    color: white;
+}
+
+/* --- 5. STAT CARDS --- */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 32px;
+}
+
+.stat-card {
+    background: white;
+    padding: 24px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.stat-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    background: #F1F5F9;
+}
+
+.stat-info h3 {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+
+.stat-info .value {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+/* --- 6. TABLE CARD --- */
+.content-card {
+    background: white;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    padding: 24px;
+}
+
+.card-header {
+    margin-bottom: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    text-align: left;
+    padding: 12px;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    border-bottom: 1px solid var(--border);
+}
+
+td {
+    padding: 16px 12px;
+    border-bottom: 1px solid var(--border);
+}
+
+.badge {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.bg-success { background: #DCFCE7; color: #15803D; }
+
+/* --- SỬA LỖI CHỮ TRÊN TASKBAR --- */
+.user-profile-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left; /* Đảm bảo chữ luôn căn lề trái */
+}
+
+/* Khối bọc 2 dòng chữ để ép chúng xếp hàng dọc chuẩn */
+.user-meta-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    line-height: 1.4; /* Tạo khoảng cách dòng thông thoáng */
+}
+
+.user-meta-text .user-name {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #0F172A; /* Màu chữ đen đậm hẳn */
+}
+
+.user-meta-text .user-role {
+    font-size: 0.75rem;
+    color: #64748B; /* Màu chữ xám mô tả */
+    font-weight: 500;
+}
+
+/* Khoảng cách giữa cụm User và nút Đăng xuất */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 24px; /* Tạo khoảng cách an toàn cho nút Đăng xuất không bị dính */
+}
+
+/* ==========================================
+   STYLE CHO MENU-ITEM TRONG SIDEBAR
+   ========================================== */
+
+/* Thao tác dọn dẹp danh sách thẻ ul/li */
+.admin-sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+/* Cấu trúc cơ bản của một mục menu */
+.menu-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;                  /* Khoảng cách giữa Icon và Chữ */
+    padding: 12px 16px;         /* Độ rộng vừa vặn cho nút bấm */
+    color: rgba(255, 255, 255, 0.8) !important; /* Màu chữ trắng mờ sang trọng, không bị chói */
+    text-decoration: none !important;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border-radius: 10px;        /* Bo góc mềm mại giống các hệ thống lớn */
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); /* Hiệu ứng chuyển động mượt mà */
+    cursor: pointer;
+}
+
+/* Định dạng cấu trúc cho thẻ chứa Icon (FontAwesome) bên trong menu */
+.menu-item i {
+    font-size: 1.15rem;
+    width: 24px;                /* Cố định chiều rộng icon giúp các dòng chữ luôn thẳng hàng dọc */
+    text-align: center;
+    opacity: 0.9;
+    transition: transform 0.25s ease;
+}
+
+/* --- 1. TRẠNG THÁI KHI DI CHUỘT QUA (HOVER) --- */
+.menu-item:hover {
+    background-color: rgba(255, 255, 255, 0.1); /* Tạo một lớp nền trắng mờ nhẹ */
+    color: #FFFFFF !important;                  /* Chữ sáng rực lên */
+    padding-left: 20px;                         /* Nhích nhẹ sang phải tạo hiệu ứng động ứng xử tốt */
+}
+
+.menu-item:hover i {
+    transform: scale(1.1);                      /* Icon phóng to nhẹ một chút khi hover */
+}
+
+/* --- 2. TRẠNG THÁI KHI TRANG ĐANG ĐƯỢC CHỌN (ACTIVE) --- */
+.menu-item.active {
+    background-color: #FFFFFF !important;       /* Đổi hẳn sang nền trắng tinh khôi */
+    color: #DC2626 !important;                  /* Chữ chuyển sang màu đỏ chủ đạo để tương phản cực cao */
+    font-weight: 700;                           /* Làm đậm chữ lên */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Đổ bóng nhẹ giúp nút "nổi" lên trên bề mặt đỏ */
+}
+
+/* Đảm bảo icon của trang đang chọn cũng đổi sang màu đỏ đồng bộ */
+.menu-item.active i {
+    color: #DC2626 !important;
+    opacity: 1;
+}

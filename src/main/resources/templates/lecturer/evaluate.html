@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Đánh giá sinh viên — LabNexus</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+</head>
+<body>
+<div class="app-shell">
+    <aside class="sidebar" th:insert="~{fragments/layout :: sidebar('evaluations', 'LECTURER')}"></aside>
+
+    <main>
+        <header class="topbar">
+            <div>
+                <div class="topbar-title">Đánh giá sinh viên</div>
+                <div class="topbar-subtitle" th:text="'Phiên tư vấn #' + ${session?.id}">Session #1</div>
+            </div>
+            <div class="topbar-spacer"></div>
+            <a th:href="@{/lecturer/dashboard}" class="btn btn-outline btn-sm">
+                <i class="fa-solid fa-arrow-left"></i> Quay lại
+            </a>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="form-row">
+                <div style="flex: 1;">
+                    <div class="card" style="margin-bottom: 24px;">
+                        <h3 style="margin-top: 0; font-family: 'Syne', sans-serif;">Thông tin phiên hẹn</h3>
+                        <div style="margin-bottom: 12px;"><strong>Sinh viên:</strong> <span th:text="${session?.student?.fullName}">Nguyễn Văn A</span></div>
+                        <div style="margin-bottom: 12px;"><strong>Chủ đề:</strong> <span th:text="${session?.topic}">AI Research</span></div>
+                        <div><strong>Thời gian:</strong> <span th:text="${#temporals.format(session?.appointmentTime, 'dd/MM/yyyy HH:mm')}">20/10/2023 14:00</span></div>
+                    </div>
+                </div>
+
+                <div style="flex: 2;">
+                    <form class="card" th:action="@{/lecturer/evaluate/{id}(id=${session?.id})}" method="post">
+
+                        <div class="form-group">
+                            <label class="form-label">Chọn điểm số (1-10) <span>*</span></label>
+                            <div class="score-grid">
+                                <th:block th:each="i : ${#numbers.sequence(1, 10)}">
+                                    <input type="radio" th:id="'sc-' + ${i}" name="score" th:value="${i}" class="score-radio" required>
+                                    <label th:for="'sc-' + ${i}" class="score-btn" th:text="${i}"></label>
+                                </th:block>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Đề xuất mượn thiết bị</label>
+                            <div class="equip-list">
+                                <div class="equip-item-container" th:each="equipment : ${equipments}">
+                                    <input type="checkbox" th:id="'eq-' + ${equipment.id}" name="equipIds" th:value="${equipment.id}" class="equip-checkbox">
+                                    <label th:for="'eq-' + ${equipment.id}" class="equip-checkbox-label">
+                                        <i class="fa-regular fa-square"></i>
+                                        <span th:text="${equipment.name}">Máy Oscilloscope</span>
+                                    </label>
+                                    <input type="number" th:name="'qty_' + ${equipment.id}" class="form-control equip-qty-input" min="1" value="1" placeholder="SL">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Nhận xét chuyên môn</label>
+                            <textarea class="form-control" name="comment" rows="5" placeholder="Mô tả năng lực, thái độ, điểm cần cải thiện của sinh viên..."></textarea>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fa-solid fa-circle-info"></i>
+                            <span>Sau khi submit: lịch hẹn → COMPLETED, phiếu mượn thiết bị → chờ Admin duyệt xuất kho.</span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100" style="padding: 12px; font-size: 1rem;">
+                            <i class="fa-solid fa-paper-plane"></i> Hoàn thành đánh giá
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Chỉnh sửa thiết bị | Rikkei Academy</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link rel="stylesheet" th:href="@{/css/admin.css}"/>
+    <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+</head>
+<body class="admin-layout">
+
+<aside th:replace="~{fragments/admin_sidebar :: sidebar('equipment')}"></aside>
+
+<div class="admin-main">
+    <div class="max-w-2xl bg-white rounded-2xl border border-slate-100 shadow-sm p-8 mx-auto mt-6">
+        <div class="pb-5 border-b border-slate-100 mb-6">
+            <h1 class="text-xl font-bold text-slate-900">Hiệu chỉnh thông tin thiết bị</h1>
+            <p class="text-sm text-slate-500 mt-1">Cập nhật biến động số lượng kho hoặc thông tin kỹ thuật vật tư</p>
+        </div>
+
+        <form th:action="@{/admin/equipment/{id}/edit(id=${equipment.id})}" th:object="${equipment}" method="post" class="space-y-5">
+            <div>
+                <label class="block text-sm font-bold text-slate-700 mb-2">Tên gọi thiết bị vật tư <span class="text-red-500">*</span></label>
+                <input type="text" th:field="*{name}" required class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-slate-700 mb-2">Mã Code nhận diện sản phẩm <span class="text-red-500">*</span></label>
+                <input type="text" th:field="*{code}" required class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Tổng số lượng nhập kho <span class="text-red-500">*</span></label>
+                    <input type="number" th:field="*{totalQuantity}" min="0" required class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"/>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Đơn vị đo lường</label>
+                    <input type="text" th:field="*{unit}" class="w-full border border-slate-200 rounded-xl px-4 py-3 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
+                </div>
+            </div>
+
+            <div class="pt-6 border-t border-slate-100 flex justify-end gap-3 mt-8">
+                <a th:href="@{/admin/equipment}" class="px-5 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 font-medium transition-colors">Hủy bỏ</a>
+                <button type="submit" class="bg-[#0052cc] hover:bg-[#0044aa] text-white px-6 py-2.5 rounded-xl font-medium shadow-md transition-all">
+                    Cập nhật thay đổi
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>
