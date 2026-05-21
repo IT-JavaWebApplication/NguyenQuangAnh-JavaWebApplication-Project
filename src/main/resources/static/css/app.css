@@ -108,6 +108,14 @@ body {
 .flash-success { background: #ecfdf5; border-color: var(--c-success); color: #065f46; }
 .flash-error   { background: #fef2f2; border-color: var(--c-danger);  color: #991b1b; }
 .flash-info    { background: #eff6ff; border-color: var(--c-primary); color: #1e3a8a; }
+.flash-prominent {
+    font-size: 0.95rem;
+    font-weight: 600;
+    box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+    border-width: 1px;
+    border-style: solid;
+    border-left-width: 4px;
+}
 
 /* ----- Tables ----- */
 .app-table { width: 100%; border-collapse: separate; border-spacing: 0; }

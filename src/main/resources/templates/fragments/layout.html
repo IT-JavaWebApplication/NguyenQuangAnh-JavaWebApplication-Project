@@ -123,13 +123,19 @@
 </header>
 
 <!-- Flash message (thành công / lỗi) đọc từ RedirectAttributes. -->
-<div th:fragment="flash">
-    <div th:if="${successMsg}" class="flash flash-success">
+<div th:fragment="flash" id="appFlashWrap">
+    <div th:if="${successMsg}" class="flash flash-success flash-prominent" role="alert">
         <i class="fa-solid fa-circle-check mr-2"></i><span th:text="${successMsg}"></span>
     </div>
-    <div th:if="${errorMsg}" class="flash flash-error">
+    <div th:if="${errorMsg}" class="flash flash-error flash-prominent" role="alert">
         <i class="fa-solid fa-circle-exclamation mr-2"></i><span class="whitespace-pre-line" th:text="${errorMsg}"></span>
     </div>
+    <script th:if="${successMsg != null or errorMsg != null}">
+        (function () {
+            var el = document.getElementById('appFlashWrap');
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        })();
+    </script>
 </div>
 
 <!--

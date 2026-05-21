@@ -35,7 +35,7 @@
             </div>
         </div>
 
-        <form th:action="@{/lecturer/sessions/{id}/evaluate(id=${sess.id})}" th:object="${evaluationDTO}" method="post" class="space-y-6">
+        <form id="evaluateForm" th:action="@{/lecturer/sessions/{id}/evaluate(id=${sess.id})}" th:object="${evaluationDTO}" method="post" class="space-y-6">
 
             <!-- Evaluation scores -->
             <div class="app-card p-6">
@@ -79,8 +79,8 @@
                     <i class="fa-solid fa-boxes-stacked text-blue-600"></i> Chỉ định thiết bị / tài liệu
                 </h3>
                 <p class="text-xs text-slate-500 mb-4">
-                    Chọn thiết bị/tài liệu cần cấp cho sinh viên. Sau khi lưu, phiếu mượn sẽ tự động chuyển sang trạng thái <b>"Chờ cấp phát"</b>
-                    để Admin xác nhận xuất kho.
+                    Chọn thiết bị/tài liệu cần cấp cho sinh viên. Sau khi lưu, phiếu mượn chuyển sang <b>Chờ cấp phát</b> —
+                    Admin xem tại menu <b>Cấp phát thiết bị</b>. <b>Tồn kho chưa trừ</b> ở bước này; chỉ trừ khi Admin xác nhận xuất kho.
                 </p>
 
                 <div class="overflow-x-auto border border-slate-200 rounded-lg">
@@ -95,9 +95,10 @@
                         </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
-                        <tr th:each="equip, equipStat : ${equipments}">
+                        <tr th:each="equip, equipStat : ${equipments}" class="eq-row">
                             <td class="px-3 py-2 text-center">
-                                <input type="checkbox" name="equipmentIds" th:value="${equip.id}" class="rounded"/>
+                                <input type="checkbox" name="equipmentIds" th:value="${equip.id}"
+                                       class="rounded eq-check"/>
                             </td>
                             <td class="px-3 py-2 font-mono text-xs text-slate-500" th:text="${equip.code}">CODE</td>
                             <td class="px-3 py-2 text-slate-800" th:text="${equip.name}">Name</td>
@@ -109,7 +110,8 @@
                             <td class="px-3 py-2 text-center">
                                 <input type="number" name="equipmentQuantities" value="1" min="1"
                                        th:max="${equip.available}"
-                                       class="w-20 text-center app-input py-1.5"/>
+                                       disabled
+                                       class="w-20 text-center app-input py-1.5 eq-qty"/>
                             </td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(equipments)}">
@@ -134,5 +136,29 @@
     </main>
 </div>
 
+<script>
+(function () {
+    function syncRow(row) {
+        var cb = row.querySelector('.eq-check');
+        var qty = row.querySelector('.eq-qty');
+        if (!cb || !qty) return;
+        var on = cb.checked;
+        qty.disabled = !on;
+        qty.required = on;
+        row.classList.toggle('bg-blue-50', on);
+    }
+    document.querySelectorAll('.eq-row').forEach(function (row) {
+        var cb = row.querySelector('.eq-check');
+        if (cb) cb.addEventListener('change', function () { syncRow(row); });
+        syncRow(row);
+    });
+    var form = document.getElementById('evaluateForm');
+    if (form) {
+        form.addEventListener('submit', function () {
+            document.querySelectorAll('.eq-row').forEach(syncRow);
+        });
+    }
+})();
+</script>
 </body>
 </html>

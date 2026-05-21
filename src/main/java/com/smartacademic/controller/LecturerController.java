@@ -156,9 +156,15 @@ public class LecturerController {
 
         try {
             User user = getCurrentUser(session);
-            borrowingService.evaluateAndAssignEquipment(user.getId(), evaluationDTO);
-            redirectAttributes.addFlashAttribute("successMsg",
-                    "Đánh giá thành công! Phiếu mượn thiết bị đã được tạo (nếu có) và chuyển sang chờ cấp phát.");
+            Long borrowingId = borrowingService.evaluateAndAssignEquipment(user.getId(), evaluationDTO);
+            if (borrowingId != null) {
+                redirectAttributes.addFlashAttribute("successMsg",
+                        "Đánh giá thành công! Phiếu mượn #" + borrowingId
+                                + " đã gửi Admin (Chờ cấp phát). Tồn kho sẽ trừ khi Admin bấm \"Xác nhận xuất kho\".");
+            } else {
+                redirectAttributes.addFlashAttribute("successMsg",
+                        "Đánh giá thành công! (Chưa chỉ định thiết bị — không tạo phiếu mượn.)");
+            }
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
         }

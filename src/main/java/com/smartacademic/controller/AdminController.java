@@ -175,8 +175,10 @@ public class AdminController {
 
     @GetMapping("/borrowing")
     public String borrowingList(Model model, HttpSession session) {
+        var pending = borrowingService.getPendingDispatch();
         model.addAttribute("user", getCurrentUser(session));
-        model.addAttribute("pendingRecords", borrowingService.getPendingDispatch());
+        model.addAttribute("pendingRecords", pending);
+        model.addAttribute("pendingCount", pending.size());
         model.addAttribute("activePage", "borrowing");
         return "admin/borrowing";
     }

@@ -39,10 +39,14 @@ public class BorrowingServiceImpl implements BorrowingService {
     @Autowired
     private EmailService emailService;
 
-    
+    /**
+     * Giảng viên đánh giá buổi tư vấn + (tuỳ chọn) tạo phiếu mượn thiết bị.
+     * Toàn bộ thao tác (update session, persist evaluation, persist phiếu mượn)
+     * nằm trong 1 transaction — lỗi giữa chừng sẽ rollback hết.
+     */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
-    public void evaluateAndAssignEquipment(Long lecturerId, EvaluationDTO dto) {
+    public Long evaluateAndAssignEquipment(Long lecturerId, EvaluationDTO dto) {
 
         MentoringSession session = sessionRepository.findById(dto.getSessionId())
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy lịch hẹn"));
@@ -67,6 +71,7 @@ public class BorrowingServiceImpl implements BorrowingService {
         evaluation.setRecommendations(dto.getRecommendations());
         sessionFactory.getCurrentSession().persist(evaluation);
 
+        Long borrowingRecordId = null;
         if (dto.getEquipmentIds() != null && !dto.getEquipmentIds().isEmpty()) {
             BorrowingRecord borrowingRecord = new BorrowingRecord();
             borrowingRecord.setSession(session);
@@ -90,7 +95,11 @@ public class BorrowingServiceImpl implements BorrowingService {
                 sessionFactory.getCurrentSession().persist(detail);
                 details.add(detail);
             }
+            if (details.isEmpty()) {
+                throw new IllegalArgumentException("Vui lòng chọn ít nhất một thiết bị hợp lệ");
+            }
             borrowingRecord.setDetails(details);
+            borrowingRecordId = borrowingRecord.getId();
         }
 
         User student = session.getStudent();
@@ -100,9 +109,13 @@ public class BorrowingServiceImpl implements BorrowingService {
                     : student.getUsername();
             emailService.sendEvaluationReady(student.getEmail(), name, session);
         }
+        return borrowingRecordId;
     }
 
-    
+    /**
+     * Admin xác nhận xuất kho: check toàn bộ tồn kho trước, đủ thì trừ và chuyển
+     * status DISPATCHED; thiếu thì throw để rollback và báo lỗi tổng hợp.
+     */
     @Override
     @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void confirmDispatch(Long borrowingRecordId, Long adminId) {

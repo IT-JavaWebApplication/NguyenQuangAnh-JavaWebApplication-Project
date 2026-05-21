@@ -2,6 +2,7 @@ package com.smartacademic.repository.impl;
 
 import com.smartacademic.config.HibernateSessionProvider;
 import com.smartacademic.entity.BorrowingRecord;
+import com.smartacademic.enums.BorrowingStatus;
 import com.smartacademic.repository.BorrowingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
@@ -49,8 +50,9 @@ public class BorrowingRepositoryImpl implements BorrowingRepository {
                                 "LEFT JOIN FETCH d.equipment " +
                                 "LEFT JOIN FETCH br.student s " +
                                 "LEFT JOIN FETCH s.profile " +
-                                "WHERE br.status = 'PENDING_DISPATCH' " +
+                                "WHERE br.status = :status " +
                                 "ORDER BY br.createdAt ASC", BorrowingRecord.class)
+                .setParameter("status", BorrowingStatus.PENDING_DISPATCH)
                 .list();
     }
 

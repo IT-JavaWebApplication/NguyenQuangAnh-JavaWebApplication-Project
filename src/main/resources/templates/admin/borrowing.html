@@ -13,9 +13,18 @@
     <main class="p-8">
         <div th:replace="~{fragments/layout :: flash}"></div>
 
+        <div class="flex items-center justify-between mb-4">
+            <p class="text-sm text-slate-600">
+                <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-100 text-amber-800 font-bold text-xs">
+                    <i class="fa-solid fa-inbox"></i>
+                    <span th:text="${pendingCount} + ' phiếu chờ cấp phát'">0 phiếu</span>
+                </span>
+            </p>
+        </div>
+
         <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 text-sm text-amber-900">
             <p><i class="fa-solid fa-triangle-exclamation mr-1"></i>
-            Khi bấm "Xác nhận xuất kho", hệ thống sẽ kiểm tra số lượng tồn kho cho từng thiết bị. Nếu thiếu, giao dịch bị từ chối — kho không bị trừ và trạng thái phiếu giữ nguyên.</p>
+            Phiếu được tạo khi Giảng viên lưu đánh giá + chọn thiết bị. Khi bấm "Xác nhận xuất kho", hệ thống kiểm tra tồn kho và <b>trừ số lượng</b>. Nếu thiếu, giao dịch bị từ chối.</p>
         </div>
 
         <div class="space-y-4">
