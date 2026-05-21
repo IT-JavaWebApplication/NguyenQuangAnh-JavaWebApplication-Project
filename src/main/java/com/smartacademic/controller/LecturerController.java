@@ -151,6 +151,7 @@ public class LecturerController {
             model.addAttribute("equipments", equipmentService.getAllActive());
             model.addAttribute("user", user);
             model.addAttribute("activePage", "dashboard");
+            model.addAttribute("errorMsg", "Vui lòng nhập điểm kỹ năng và thái độ từ 1 đến 10.");
             return "lecturer/evaluate";
         }
 

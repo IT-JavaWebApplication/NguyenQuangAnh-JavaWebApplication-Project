@@ -35,7 +35,10 @@
             </div>
         </div>
 
-        <form id="evaluateForm" th:action="@{/lecturer/sessions/{id}/evaluate(id=${sess.id})}" th:object="${evaluationDTO}" method="post" class="space-y-6">
+        <div id="evaluateFormError" class="hidden flash flash-error mb-4" role="alert"></div>
+
+        <form id="evaluateForm" th:action="@{/lecturer/sessions/{id}/evaluate(id=${sess.id})}" th:object="${evaluationDTO}" method="post" class="space-y-6" novalidate>
+            <input type="hidden" th:field="*{sessionId}"/>
 
             <!-- Evaluation scores -->
             <div class="app-card p-6">
@@ -95,10 +98,12 @@
                         </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
-                        <tr th:each="equip, equipStat : ${equipments}" class="eq-row">
+                        <tr th:each="equip, equipStat : ${equipments}" class="eq-row"
+                            th:attr="data-available=${equip.available != null ? equip.available : 0}">
                             <td class="px-3 py-2 text-center">
                                 <input type="checkbox" name="equipmentIds" th:value="${equip.id}"
-                                       class="rounded eq-check"/>
+                                       class="rounded eq-check"
+                                       th:disabled="${equip.available == null or equip.available < 1}"/>
                             </td>
                             <td class="px-3 py-2 font-mono text-xs text-slate-500" th:text="${equip.code}">CODE</td>
                             <td class="px-3 py-2 text-slate-800" th:text="${equip.name}">Name</td>
@@ -109,7 +114,7 @@
                             </td>
                             <td class="px-3 py-2 text-center">
                                 <input type="number" name="equipmentQuantities" value="1" min="1"
-                                       th:max="${equip.available}"
+                                       th:attr="max=${equip.available != null and equip.available > 0 ? equip.available : null}"
                                        disabled
                                        class="w-20 text-center app-input py-1.5 eq-qty"/>
                             </td>
@@ -128,7 +133,7 @@
                    class="px-5 py-2.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 font-semibold">
                     Hủy
                 </a>
-                <button type="submit" class="btn-primary-main">
+                <button type="submit" id="evaluateSubmitBtn" class="btn-primary-main">
                     <i class="fa-solid fa-floppy-disk"></i> Lưu đánh giá &amp; Tạo phiếu mượn
                 </button>
             </div>
@@ -138,24 +143,72 @@
 
 <script>
 (function () {
+    var form = document.getElementById('evaluateForm');
+    var errBox = document.getElementById('evaluateFormError');
+    var submitBtn = document.getElementById('evaluateSubmitBtn');
+
+    function showError(msg) {
+        if (!errBox) return;
+        errBox.textContent = msg;
+        errBox.classList.remove('hidden');
+        errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+    function clearError() {
+        if (errBox) errBox.classList.add('hidden');
+    }
+
     function syncRow(row) {
         var cb = row.querySelector('.eq-check');
         var qty = row.querySelector('.eq-qty');
         if (!cb || !qty) return;
-        var on = cb.checked;
+        var avail = parseInt(row.getAttribute('data-available') || '0', 10);
+        var on = cb.checked && !cb.disabled;
         qty.disabled = !on;
-        qty.required = on;
+        if (on && avail > 0) {
+            qty.max = avail;
+            if (parseInt(qty.value, 10) > avail) qty.value = avail;
+        }
         row.classList.toggle('bg-blue-50', on);
     }
+
     document.querySelectorAll('.eq-row').forEach(function (row) {
         var cb = row.querySelector('.eq-check');
-        if (cb) cb.addEventListener('change', function () { syncRow(row); });
+        if (cb) cb.addEventListener('change', function () { syncRow(row); clearError(); });
         syncRow(row);
     });
-    var form = document.getElementById('evaluateForm');
+
     if (form) {
-        form.addEventListener('submit', function () {
+        form.addEventListener('submit', function (e) {
+            clearError();
             document.querySelectorAll('.eq-row').forEach(syncRow);
+
+            var skill = form.querySelector('[name="skillScore"]');
+            var attitude = form.querySelector('[name="attitudeScore"]');
+            var s = skill ? parseInt(skill.value, 10) : NaN;
+            var a = attitude ? parseInt(attitude.value, 10) : NaN;
+            if (isNaN(s) || s < 1 || s > 10 || isNaN(a) || a < 1 || a > 10) {
+                e.preventDefault();
+                showError('Vui lòng nhập điểm kỹ năng và thái độ từ 1 đến 10.');
+                return;
+            }
+
+            var checked = form.querySelectorAll('.eq-check:checked:not(:disabled)');
+            for (var i = 0; i < checked.length; i++) {
+                var row = checked[i].closest('.eq-row');
+                var qty = row ? row.querySelector('.eq-qty') : null;
+                var avail = row ? parseInt(row.getAttribute('data-available') || '0', 10) : 0;
+                var q = qty ? parseInt(qty.value, 10) : 0;
+                if (!qty || isNaN(q) || q < 1 || q > avail) {
+                    e.preventDefault();
+                    showError('Số lượng cấp phải từ 1 đến tồn kho còn lại của thiết bị đã chọn.');
+                    return;
+                }
+            }
+
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang lưu...';
+            }
         });
     }
 })();
