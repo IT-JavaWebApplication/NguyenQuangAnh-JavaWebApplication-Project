@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <th:block th:replace="~{fragments/layout :: pageHead('Truy cập bị từ chối')}"></th:block>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-orange-50 to-amber-50 p-4">
+<div class="text-center max-w-md">
+    <div class="inline-flex items-center justify-center w-24 h-24 bg-red-100 text-red-600 rounded-full mb-6 text-5xl">
+        <i class="fa-solid fa-shield-halved"></i>
+    </div>
+    <h1 class="text-4xl font-extrabold text-slate-900 mb-2">403 — Forbidden</h1>
+    <p class="text-slate-600 mb-6">Bạn không có quyền truy cập trang này. Nếu bạn nghĩ đây là lỗi, vui lòng liên hệ Quản trị viên.</p>
+    <div class="flex items-center justify-center gap-3">
+        <a th:href="@{/}" class="btn-primary-main">
+            <i class="fa-solid fa-house"></i> Về trang chủ
+        </a>
+        <form th:action="@{/auth/logout}" method="post">
+            <button type="submit" class="px-5 py-2.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100">
+                Đăng xuất
+            </button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

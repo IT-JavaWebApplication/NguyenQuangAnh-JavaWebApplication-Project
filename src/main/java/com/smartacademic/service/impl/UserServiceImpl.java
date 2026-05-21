@@ -1,15 +1,18 @@
 package com.smartacademic.service.impl;
 
+import com.smartacademic.config.HibernateSessionProvider;
 import com.smartacademic.dto.LoginDTO;
 import com.smartacademic.dto.RegisterDTO;
 import com.smartacademic.dto.UserProfileDTO;
-import com.smartacademic.entity.*;
+import com.smartacademic.entity.Department;
+import com.smartacademic.entity.Lecturer;
+import com.smartacademic.entity.User;
+import com.smartacademic.entity.UserProfile;
 import com.smartacademic.enums.Role;
 import com.smartacademic.repository.UserRepository;
 import com.smartacademic.service.UserService;
-import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCrypt;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,11 +27,13 @@ public class UserServiceImpl implements UserService {
     private UserRepository userRepository;
 
     @Autowired
-    private SessionFactory sessionFactory;
+    private HibernateSessionProvider sessionFactory;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public User register(RegisterDTO dto) {
-        // CORE-01: Validation
         if (userRepository.existsByUsername(dto.getUsername())) {
             throw new IllegalArgumentException("Tên đăng nhập đã tồn tại");
         }
@@ -39,13 +44,11 @@ public class UserServiceImpl implements UserService {
             throw new IllegalArgumentException("Mật khẩu xác nhận không khớp");
         }
 
-        // CORE-01: Hash password bằng BCrypt
-        String hashedPassword = BCrypt.hashpw(dto.getPassword(), BCrypt.gensalt(12));
+        String hashedPassword = passwordEncoder.encode(dto.getPassword());
 
         User user = new User(dto.getUsername(), dto.getEmail(), hashedPassword, Role.STUDENT);
         userRepository.save(user);
 
-        // Tạo profile
         UserProfile profile = new UserProfile();
         profile.setUser(user);
         profile.setFullName(dto.getFullName());
@@ -60,17 +63,10 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public Optional<User> login(LoginDTO dto) {
-        // CORE-01: Xác thực đăng nhập
         Optional<User> userOpt = userRepository.findByUsername(dto.getUsername());
-        if (userOpt.isEmpty()) {
-            return Optional.empty();
-        }
+        if (userOpt.isEmpty()) return Optional.empty();
         User user = userOpt.get();
-        // So sánh mật khẩu đã hash
-        if (!BCrypt.checkpw(dto.getPassword(), user.getPassword())) {
-            return Optional.empty();
-        }
-        return Optional.of(user);
+        return passwordEncoder.matches(dto.getPassword(), user.getPassword()) ? Optional.of(user) : Optional.empty();
     }
 
     @Override
@@ -82,7 +78,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void updateProfile(Long userId, UserProfileDTO dto) {
-        // CORE-03: Cập nhật hồ sơ cá nhân
         User user = getUserById(userId);
         UserProfile profile = user.getProfile();
         if (profile == null) {
@@ -91,22 +86,40 @@ public class UserServiceImpl implements UserService {
         }
         profile.setFullName(dto.getFullName());
         profile.setPhone(dto.getPhone());
-        profile.setStudentCode(dto.getStudentCode());
-        profile.setClassName(dto.getClassName());
-
+        if (user.getRole() == Role.STUDENT) {
+            profile.setStudentCode(dto.getStudentCode());
+            profile.setClassName(dto.getClassName());
+        }
         sessionFactory.getCurrentSession().merge(profile);
 
-        // Nếu là giảng viên, cập nhật thêm thông tin
-        if (user.getRole() == Role.LECTURER && dto.getDepartmentId() != null) {
+        if (user.getRole() == Role.LECTURER) {
             Lecturer lecturer = user.getLecturerInfo();
             if (lecturer != null) {
                 lecturer.setSpecialization(dto.getSpecialization());
                 lecturer.setBio(dto.getBio());
-                Department dept = sessionFactory.getCurrentSession().get(Department.class, dto.getDepartmentId());
-                if (dept != null) lecturer.setDepartment(dept);
+                if (dto.getSessionFee() != null) {
+                    lecturer.setSessionFee(dto.getSessionFee());
+                }
+                if (dto.getDepartmentId() != null) {
+                    Department dept = sessionFactory.getCurrentSession().get(Department.class, dto.getDepartmentId());
+                    if (dept != null) lecturer.setDepartment(dept);
+                }
                 sessionFactory.getCurrentSession().merge(lecturer);
             }
         }
+    }
+
+    @Override
+    public void changePassword(Long userId, String currentPassword, String newPassword) {
+        User user = getUserById(userId);
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new IllegalArgumentException("Mật khẩu hiện tại không đúng");
+        }
+        if (newPassword == null || newPassword.length() < 6) {
+            throw new IllegalArgumentException("Mật khẩu mới phải có ít nhất 6 ký tự");
+        }
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.update(user);
     }
 
     @Override

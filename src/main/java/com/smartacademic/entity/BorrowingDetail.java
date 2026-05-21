@@ -3,13 +3,13 @@ package com.smartacademic.entity;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import jakarta.persistence.*;
+import lombok.ToString;
 
 @Entity
 @Table(name = "borrowing_details")
 @Data
 @NoArgsConstructor
+@ToString(exclude = {"borrowingRecord", "equipment"})
 public class BorrowingDetail {
 
     @Id

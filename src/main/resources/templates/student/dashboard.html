@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <th:block th:replace="~{fragments/layout :: pageHead('Dashboard Sinh viên')}"></th:block>
+</head>
+<body class="bg-slate-50">
+
+<aside th:replace="~{fragments/layout :: sidebar('STUDENT', ${activePage})}"></aside>
+
+<div class="ml-64 min-h-screen">
+    <header th:replace="~{fragments/layout :: topbar('Bảng điều khiển')}"></header>
+
+    <main class="p-8">
+        <div th:replace="~{fragments/layout :: flash}"></div>
+
+        <!-- Stat cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="app-card p-5 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-calendar-day"></i>
+                </div>
+                <div>
+                    <div class="text-xs text-slate-500 uppercase font-bold">Tổng buổi tư vấn</div>
+                    <div class="text-2xl font-bold text-slate-900" th:text="${totalCount}">0</div>
+                </div>
+            </div>
+            <div class="app-card p-5 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-hourglass-half"></i>
+                </div>
+                <div>
+                    <div class="text-xs text-slate-500 uppercase font-bold">Chờ xác nhận</div>
+                    <div class="text-2xl font-bold text-slate-900" th:text="${pendingCount}">0</div>
+                </div>
+            </div>
+            <div class="app-card p-5 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div>
+                    <div class="text-xs text-slate-500 uppercase font-bold">Đã hoàn thành</div>
+                    <div class="text-2xl font-bold text-slate-900" th:text="${completedCount}">0</div>
+                </div>
+            </div>
+            <div class="app-card p-5 flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-red-100 text-red-600 flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-ban"></i>
+                </div>
+                <div>
+                    <div class="text-xs text-slate-500 uppercase font-bold">Đã hủy</div>
+                    <div class="text-2xl font-bold text-slate-900" th:text="${cancelledCount}">0</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sessions table -->
+        <div class="app-card overflow-hidden">
+            <div class="flex justify-between items-center px-6 py-4 border-b border-slate-100">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900">Lịch tư vấn của bạn</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Quản lý lịch hẹn cố vấn học tập</p>
+                </div>
+                <a th:href="@{/student/booking}" class="btn-primary-main">
+                    <i class="fa-solid fa-plus"></i> Đặt lịch mới
+                </a>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="app-table">
+                    <thead>
+                    <tr>
+                        <th>Mã</th>
+                        <th>Giảng viên</th>
+                        <th>Ngày tư vấn</th>
+                        <th>Thời gian</th>
+                        <th>Ghi chú</th>
+                        <th>Trạng thái</th>
+                        <th class="text-right">Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="s : ${sessions}">
+                        <td class="font-mono text-xs text-slate-500" th:text="'#' + ${s.id}">#1</td>
+                        <td>
+                            <div class="font-semibold text-slate-800"
+                                 th:text="${s.lecturer.profile != null ? s.lecturer.profile.fullName : s.lecturer.username}">GV</div>
+                            <div class="text-xs text-slate-500" th:text="${s.lecturer.email}">email</div>
+                        </td>
+                        <td th:text="${#temporals.format(s.sessionDate, 'dd/MM/yyyy')}">21/05/2026</td>
+                        <td th:text="${#temporals.format(s.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(s.endTime, 'HH:mm')}">08:00 - 10:00</td>
+                        <td class="max-w-xs truncate" th:text="${s.note ?: '—'}">—</td>
+                        <td>
+                            <span th:switch="${s.status.name()}" class="badge-status">
+                                <span th:case="'PENDING_PAYMENT'" class="badge-status badge-pendingdis">Chờ thanh toán</span>
+                                <span th:case="'PENDING'"   class="badge-status badge-pending">Chờ xác nhận</span>
+                                <span th:case="'CONFIRMED'" class="badge-status badge-confirmed">Đã xác nhận</span>
+                                <span th:case="'COMPLETED'" class="badge-status badge-completed">Hoàn thành</span>
+                                <span th:case="'CANCELLED'" class="badge-status badge-cancelled">Đã hủy</span>
+                            </span>
+                        </td>
+                        <td class="text-right whitespace-nowrap">
+                            <form th:if="${s.status.name() == 'PENDING_PAYMENT'}"
+                                  th:action="@{/payment/session/{id}/checkout(id=${s.id})}" method="post"
+                                  class="inline">
+                                <button type="submit"
+                                        class="px-3 py-1.5 text-xs font-semibold text-white bg-rose-500 hover:bg-rose-600 rounded-md">
+                                    <i class="fa-solid fa-credit-card"></i> Thanh toán
+                                </button>
+                            </form>
+                            <form th:if="${s.status.name() == 'PENDING_PAYMENT' || s.status.name() == 'PENDING' || s.status.name() == 'CONFIRMED'}"
+                                  th:action="@{/student/sessions/{id}/cancel(id=${s.id})}" method="post"
+                                  data-confirm="Khung giờ sẽ được giải phóng và giảng viên không còn nhận được lịch này. Bạn chắc chắn muốn huỷ?"
+                                  data-confirm-title="Huỷ lịch tư vấn?"
+                                  data-confirm-ok="Huỷ lịch"
+                                  data-confirm-style="danger"
+                                  class="inline">
+                                <input type="hidden" name="cancelReason" value="Sinh viên chủ động hủy"/>
+                                <button type="submit"
+                                        class="px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50 rounded-md">
+                                    <i class="fa-solid fa-ban"></i> Hủy
+                                </button>
+                            </form>
+                            <span th:if="${s.status.name() != 'PENDING_PAYMENT' and s.status.name() != 'PENDING' and s.status.name() != 'CONFIRMED'}"
+                                  class="text-xs text-slate-400">—</span>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(sessions)}">
+                        <td colspan="7" class="text-center text-slate-400 py-12">
+                            <i class="fa-solid fa-calendar-xmark text-3xl mb-3 block"></i>
+                            Chưa có lịch tư vấn nào. <a th:href="@{/student/booking}" class="text-blue-600 hover:underline">Đặt lịch ngay</a>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div th:replace="~{fragments/layout :: confirmModal}"></div>
+
+</body>
+</html>

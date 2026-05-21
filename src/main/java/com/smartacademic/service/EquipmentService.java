@@ -6,9 +6,9 @@ import com.smartacademic.entity.Equipment;
 import java.util.List;
 
 public interface EquipmentService {
-    Equipment create(EquipmentDTO dto);      // CORE-04
-    Equipment update(Long id, EquipmentDTO dto);  // CORE-04
-    void delete(Long id);                    // CORE-04
+    Equipment create(EquipmentDTO dto);
+    Equipment update(Long id, EquipmentDTO dto);
+    void delete(Long id);
     Equipment getById(Long id);
     List<Equipment> getAll();
     List<Equipment> getAllActive();

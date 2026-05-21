@@ -1,18 +1,20 @@
 package com.smartacademic.service.impl;
 
+import com.smartacademic.config.HibernateSessionProvider;
 import com.smartacademic.dto.AcademicHistoryDTO;
 import com.smartacademic.dto.BookingRequestDTO;
 import com.smartacademic.entity.*;
 import com.smartacademic.enums.SessionStatus;
 import com.smartacademic.repository.MentoringSessionRepository;
+import com.smartacademic.service.EmailService;
 import com.smartacademic.service.MentoringSessionService;
-import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,31 +27,28 @@ public class MentoringSessionServiceImpl implements MentoringSessionService {
     private MentoringSessionRepository sessionRepository;
 
     @Autowired
-    private SessionFactory sessionFactory;
+    private HibernateSessionProvider sessionFactory;
 
-    // CORE-05: Đặt lịch cố vấn & chống xung đột
+    @Autowired
+    private EmailService emailService;
+
     @Override
     public MentoringSession book(Long studentId, BookingRequestDTO dto) {
-        // Validate: không cho đặt lịch trong quá khứ
         LocalDate today = LocalDate.now();
         if (dto.getSessionDate().isBefore(today) ||
-                (dto.getSessionDate().equals(today) && dto.getStartTime().isBefore(java.time.LocalTime.now()))) {
+                (dto.getSessionDate().equals(today) && dto.getStartTime().isBefore(LocalTime.now()))) {
             throw new IllegalArgumentException("Không thể đặt lịch vào ngày/giờ đã qua");
         }
-
-        // Validate: giờ kết thúc phải sau giờ bắt đầu
         if (!dto.getEndTime().isAfter(dto.getStartTime())) {
             throw new IllegalArgumentException("Giờ kết thúc phải sau giờ bắt đầu");
         }
 
-        // CORE-05: Kiểm tra xung đột khung giờ (1 giảng viên không bị đặt 2 lần cùng khung giờ)
         if (sessionRepository.isSlotTaken(dto.getLecturerId(), dto.getSessionDate(), dto.getStartTime())) {
             throw new IllegalStateException("Khung giờ này đã được đặt. Vui lòng chọn khung giờ khác");
         }
 
-        User student = sessionFactory.getCurrentSession().get(User.class, studentId);
+        User student  = sessionFactory.getCurrentSession().get(User.class, studentId);
         User lecturer = sessionFactory.getCurrentSession().get(User.class, dto.getLecturerId());
-
         if (student == null || lecturer == null) {
             throw new RuntimeException("Không tìm thấy thông tin người dùng");
         }
@@ -61,38 +60,67 @@ public class MentoringSessionServiceImpl implements MentoringSessionService {
         session.setStartTime(dto.getStartTime());
         session.setEndTime(dto.getEndTime());
         session.setNote(dto.getNote());
-        session.setStatus(SessionStatus.PENDING);
 
-        return sessionRepository.save(session);
+        // Nếu lecturer có session_fee > 0 → trạng thái PENDING_PAYMENT (chờ thanh toán),
+        // ngược lại miễn phí → chuyển luôn sang PENDING (chờ giảng viên xác nhận).
+        java.math.BigDecimal fee = java.math.BigDecimal.ZERO;
+        if (lecturer.getLecturerInfo() != null && lecturer.getLecturerInfo().getSessionFee() != null) {
+            fee = lecturer.getLecturerInfo().getSessionFee();
+        }
+        if (fee.compareTo(java.math.BigDecimal.ZERO) > 0) {
+            session.setStatus(SessionStatus.PENDING_PAYMENT);
+        } else {
+            session.setStatus(SessionStatus.PENDING);
+        }
+
+        MentoringSession saved = sessionRepository.save(session);
+
+        // Buổi miễn phí thì gửi email xác nhận luôn; buổi có phí thì
+        // PaymentService sẽ gửi email sau khi thanh toán SUCCESS.
+        if (saved.getStatus() == SessionStatus.PENDING && student.getEmail() != null) {
+            String name = student.getProfile() != null
+                    ? student.getProfile().getFullName()
+                    : student.getUsername();
+            emailService.sendBookingConfirmation(student.getEmail(), name, saved);
+        }
+        return saved;
     }
 
-    // CORE-09: Hủy lịch & giải phóng slot
     @Override
     public void cancel(Long sessionId, Long studentId, String reason) {
         MentoringSession session = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy lịch hẹn"));
 
-        // Kiểm tra quyền hủy
         if (!session.getStudent().getId().equals(studentId)) {
             throw new SecurityException("Bạn không có quyền hủy lịch này");
         }
-
-        // Chỉ được hủy lịch ở trạng thái PENDING hoặc CONFIRMED
-        if (session.getStatus() != SessionStatus.PENDING && session.getStatus() != SessionStatus.CONFIRMED) {
+        if (session.getStatus() != SessionStatus.PENDING_PAYMENT
+                && session.getStatus() != SessionStatus.PENDING
+                && session.getStatus() != SessionStatus.CONFIRMED) {
             throw new IllegalStateException("Không thể hủy lịch ở trạng thái hiện tại");
         }
+        // Lịch chưa thanh toán → cho hủy ngay, bỏ qua rule 24h.
+        boolean isWaitingPayment = session.getStatus() == SessionStatus.PENDING_PAYMENT;
 
-        // Kiểm tra thời gian: phải trước giờ hẹn ít nhất 24 tiếng
-        LocalDateTime sessionDateTime = session.getSessionDate().atTime(session.getStartTime());
-        LocalDateTime cutoffTime = LocalDateTime.now().plusHours(24);
-        if (sessionDateTime.isBefore(cutoffTime)) {
-            throw new IllegalStateException("Chỉ được hủy lịch trước giờ hẹn ít nhất 24 giờ");
+        if (!isWaitingPayment) {
+            LocalDateTime sessionDateTime = session.getSessionDate().atTime(session.getStartTime());
+            LocalDateTime cutoffTime = LocalDateTime.now().plusHours(24);
+            if (sessionDateTime.isBefore(cutoffTime)) {
+                throw new IllegalStateException("Chỉ được hủy lịch trước giờ hẹn ít nhất 24 giờ");
+            }
         }
 
-        // CORE-09: Cập nhật trạng thái hủy - slot tự động được giải phóng (không còn trong trạng thái PENDING/CONFIRMED)
         session.setStatus(SessionStatus.CANCELLED);
         session.setCancelReason(reason);
         sessionRepository.update(session);
+
+        User student = session.getStudent();
+        if (student != null && student.getEmail() != null) {
+            String name = student.getProfile() != null
+                    ? student.getProfile().getFullName()
+                    : student.getUsername();
+            emailService.sendCancellationNotice(student.getEmail(), name, session, reason);
+        }
     }
 
     @Override
@@ -116,36 +144,39 @@ public class MentoringSessionServiceImpl implements MentoringSessionService {
     @Override
     @Transactional(readOnly = true)
     public MentoringSession getSessionById(Long sessionId) {
-        return sessionRepository.findById(sessionId)
+        MentoringSession ms = sessionRepository.findById(sessionId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy lịch hẹn"));
+        // Khởi tạo lazy association trước khi rời transaction.
+        if (ms.getStudent() != null && ms.getStudent().getProfile() != null) {
+            ms.getStudent().getProfile().getFullName();
+        }
+        if (ms.getLecturer() != null && ms.getLecturer().getProfile() != null) {
+            ms.getLecturer().getProfile().getFullName();
+        }
+        return ms;
     }
 
-    /**
-     * CORE-07: Tra cứu Hồ sơ Học thuật Liên kết (JOIN phức tạp nhiều bảng)
-     * Trả về thông tin đầy đủ: giảng viên, đánh giá, thiết bị mượn
-     */
+    /** Hồ sơ học thuật của sinh viên: JOIN sessions + evaluation + borrowingRecord. */
     @Override
     @Transactional(readOnly = true)
+    @SuppressWarnings("unchecked")
     public List<AcademicHistoryDTO> getAcademicHistory(Long studentId) {
-        // Query JOIN phức tạp: mentoring_sessions + academic_evaluations + borrowing_records + borrowing_details + equipments
         List<Object[]> results = sessionFactory.getCurrentSession()
                 .createQuery(
                         "SELECT ms, ae, br " +
                                 "FROM MentoringSession ms " +
                                 "LEFT JOIN FETCH ms.lecturer l " +
-                                "LEFT JOIN FETCH l.profile lp " +
+                                "LEFT JOIN FETCH l.profile " +
                                 "LEFT JOIN FETCH l.lecturerInfo li " +
-                                "LEFT JOIN FETCH li.department d " +
+                                "LEFT JOIN FETCH li.department " +
                                 "LEFT JOIN ms.evaluation ae " +
                                 "LEFT JOIN ms.borrowingRecord br " +
                                 "WHERE ms.student.id = :studentId " +
-                                "AND ms.status IN ('COMPLETED', 'PENDING', 'CONFIRMED') " +
-                                "ORDER BY ms.sessionDate DESC", Object[].class)
+                                "ORDER BY ms.sessionDate DESC, ms.startTime DESC", Object[].class)
                 .setParameter("studentId", studentId)
                 .list();
 
         List<AcademicHistoryDTO> history = new ArrayList<>();
-
         for (Object[] row : results) {
             MentoringSession ms = (MentoringSession) row[0];
             AcademicEvaluation ae = (AcademicEvaluation) row[1];
@@ -159,7 +190,6 @@ public class MentoringSessionServiceImpl implements MentoringSessionService {
             dto.setStatus(ms.getStatus());
             dto.setNote(ms.getNote());
 
-            // Thông tin giảng viên
             User lecturer = ms.getLecturer();
             dto.setLecturerId(lecturer.getId());
             if (lecturer.getProfile() != null) {
@@ -173,7 +203,6 @@ public class MentoringSessionServiceImpl implements MentoringSessionService {
                 }
             }
 
-            // Đánh giá năng lực
             if (ae != null) {
                 dto.setSkillScore(ae.getSkillScore());
                 dto.setAttitudeScore(ae.getAttitudeScore());
@@ -181,10 +210,8 @@ public class MentoringSessionServiceImpl implements MentoringSessionService {
                 dto.setRecommendations(ae.getRecommendations());
             }
 
-            // Danh sách thiết bị mượn
             if (br != null) {
                 dto.setBorrowingStatus(br.getStatus().getDisplayName());
-                // Load details (cần eager hoặc trong session)
                 List<BorrowingDetail> details = sessionFactory.getCurrentSession()
                         .createQuery(
                                 "SELECT bd FROM BorrowingDetail bd " +
@@ -203,7 +230,6 @@ public class MentoringSessionServiceImpl implements MentoringSessionService {
                 }).collect(Collectors.toList());
                 dto.setBorrowedEquipments(equipDTOs);
             }
-
             history.add(dto);
         }
         return history;

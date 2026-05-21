@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <th:block th:replace="~{fragments/layout :: pageHead('Thống kê chi tiết')}"></th:block>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+</head>
+<body class="bg-slate-50">
+
+<aside th:replace="~{fragments/layout :: sidebar('ADMIN', ${activePage})}"></aside>
+
+<div class="ml-64 min-h-screen">
+    <header th:replace="~{fragments/layout :: topbar('Thống kê chi tiết - SQL nâng cao')}"></header>
+
+    <main class="p-8">
+        <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-6 text-sm text-indigo-900">
+            <p class="mb-0"><i class="fa-solid fa-chart-line mr-1"></i>
+            Bảng tổng quan các chỉ số quan trọng của hệ thống — cập nhật theo thời gian thực.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div class="app-card p-6">
+                <h3 class="font-bold text-slate-900 mb-1">Xu hướng tư vấn theo tháng</h3>
+                <p class="text-xs text-slate-500 mb-4">6 tháng gần nhất</p>
+                <canvas id="cTrend" height="80"></canvas>
+            </div>
+            <div class="app-card p-6">
+                <h3 class="font-bold text-slate-900 mb-1">Phân bổ Top Giảng viên</h3>
+                <p class="text-xs text-slate-500 mb-4">Theo số buổi tư vấn</p>
+                <canvas id="cLecturers" height="80"></canvas>
+            </div>
+        </div>
+
+        <div class="app-card p-6 mb-6">
+            <h3 class="font-bold text-slate-900 mb-1">Top thiết bị được mượn nhiều nhất</h3>
+            <p class="text-xs text-slate-500 mb-4">Tổng số lượt mượn theo từng thiết bị</p>
+            <canvas id="cEquipments" height="60"></canvas>
+        </div>
+
+        <!-- Summary cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="app-card p-5 text-center">
+                <div class="text-3xl font-bold text-blue-700" th:text="${stats.totalSessions}">0</div>
+                <div class="text-xs text-slate-500 uppercase font-semibold mt-1">Tổng buổi tư vấn</div>
+            </div>
+            <div class="app-card p-5 text-center">
+                <div class="text-3xl font-bold text-emerald-700" th:text="${stats.avgSkillScore}">0</div>
+                <div class="text-xs text-slate-500 uppercase font-semibold mt-1">Avg Kỹ năng</div>
+            </div>
+            <div class="app-card p-5 text-center">
+                <div class="text-3xl font-bold text-amber-700" th:text="${stats.avgAttitudeScore}">0</div>
+                <div class="text-xs text-slate-500 uppercase font-semibold mt-1">Avg Thái độ</div>
+            </div>
+            <div class="app-card p-5 text-center">
+                <div class="text-3xl font-bold text-red-700" th:text="${stats.overdueCount}">0</div>
+                <div class="text-xs text-slate-500 uppercase font-semibold mt-1">Phiếu quá hạn</div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    const m_labels = /*[[${chartMonthlyLabels}]]*/ [];
+    const m_total  = /*[[${chartMonthlyTotal}]]*/ [];
+    const m_done   = /*[[${chartMonthlyDone}]]*/ [];
+    const l_names  = /*[[${chartLecturerNames}]]*/ [];
+    const l_counts = /*[[${chartLecturerCounts}]]*/ [];
+    const e_names  = /*[[${chartEquipmentNames}]]*/ [];
+    const e_total  = /*[[${chartEquipmentTotals}]]*/ [];
+
+    new Chart(document.getElementById('cTrend'), {
+        type: 'line',
+        data: {
+            labels: m_labels,
+            datasets: [
+                { label: 'Tổng buổi', data: m_total, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.35 },
+                { label: 'Hoàn thành', data: m_done,  borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.35 }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { position: 'bottom' } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+
+    new Chart(document.getElementById('cLecturers'), {
+        type: 'pie',
+        data: {
+            labels: l_names,
+            datasets: [{
+                data: l_counts,
+                backgroundColor: ['#3b82f6','#10b981','#f59e0b','#ef4444','#8b5cf6']
+            }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'right' } } }
+    });
+
+    new Chart(document.getElementById('cEquipments'), {
+        type: 'bar',
+        data: {
+            labels: e_names,
+            datasets: [{ label: 'Tổng lượt mượn', data: e_total, backgroundColor: 'rgba(99, 102, 241, 0.7)', borderRadius: 6 }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            plugins: { legend: { display: false } },
+            scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+    /*]]>*/
+</script>
+
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <th:block th:replace="~{fragments/layout :: pageHead('Cổng thanh toán mô phỏng')}"></th:block>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4 flex items-center justify-center">
+
+<div class="w-full max-w-xl">
+
+    <!-- Brand bar (giả lập VNPay) -->
+    <div class="bg-white rounded-t-2xl shadow-xl border border-slate-100 border-b-0 px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-lg bg-gradient-to-br from-pink-500 to-rose-600 text-white flex items-center justify-center text-lg font-extrabold">
+                <i class="fa-solid fa-credit-card"></i>
+            </div>
+            <div>
+                <div class="font-bold text-slate-900">Cổng thanh toán (Sandbox)</div>
+                <div class="text-[11px] text-slate-500">Mô phỏng VNPay — Demo mode</div>
+            </div>
+        </div>
+        <span class="text-xs px-2 py-1 bg-amber-100 text-amber-700 rounded-md font-semibold">TEST MODE</span>
+    </div>
+
+    <!-- Payment info -->
+    <div class="bg-white shadow-xl border border-slate-100 px-6 py-5 space-y-3">
+        <div class="flex justify-between text-sm">
+            <span class="text-slate-500">Mã giao dịch</span>
+            <span class="font-mono font-semibold" th:text="${payment.txnRef}">TXN</span>
+        </div>
+        <div class="flex justify-between text-sm">
+            <span class="text-slate-500">Nội dung</span>
+            <span class="font-medium text-right max-w-xs" th:text="${payment.description}">Mô tả</span>
+        </div>
+        <div class="flex justify-between text-sm" th:if="${payment.session != null}">
+            <span class="text-slate-500">Buổi tư vấn</span>
+            <span class="font-medium">#<span th:text="${payment.session.id}"></span></span>
+        </div>
+        <div class="flex justify-between text-sm">
+            <span class="text-slate-500">Khách hàng</span>
+            <span class="font-medium" th:text="${payment.payer.username}">user</span>
+        </div>
+
+        <div class="border-t border-slate-100 pt-3 flex justify-between items-center">
+            <span class="text-slate-700">Tổng tiền</span>
+            <span class="text-3xl font-extrabold text-rose-600">
+                <span th:text="${#numbers.formatDecimal(payment.amount, 0, 'COMMA', 0, 'POINT')}">0</span>
+                <span class="text-base font-semibold ml-1">VND</span>
+            </span>
+        </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="bg-slate-50 rounded-b-2xl shadow-xl border border-slate-100 border-t-0 px-6 py-5 space-y-3">
+        <p class="text-xs text-center text-slate-500">
+            Đây là trang giả lập để demo luồng thanh toán mà không cần kết nối Internet đến VNPay sandbox.
+            Trong production sẽ redirect đến trang VNPay thật.
+        </p>
+        <div class="grid grid-cols-2 gap-3">
+            <form th:action="@{/payment/simulate/{ref}/confirm(ref=${payment.txnRef})}" method="post">
+                <input type="hidden" name="result" value="cancel"/>
+                <button type="submit"
+                        class="w-full px-4 py-3 rounded-lg border-2 border-slate-300 text-slate-700 font-semibold hover:bg-slate-100">
+                    <i class="fa-solid fa-xmark"></i> Hủy thanh toán
+                </button>
+            </form>
+            <form th:action="@{/payment/simulate/{ref}/confirm(ref=${payment.txnRef})}" method="post">
+                <input type="hidden" name="result" value="success"/>
+                <button type="submit"
+                        class="w-full px-4 py-3 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-bold shadow-lg">
+                    <i class="fa-solid fa-check"></i> Xác nhận thanh toán
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

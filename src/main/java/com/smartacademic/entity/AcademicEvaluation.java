@@ -1,15 +1,17 @@
 package com.smartacademic.entity;
 
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "academic_evaluations")
 @Data
 @NoArgsConstructor
+@ToString(exclude = {"session", "lecturer", "student"})
 public class AcademicEvaluation {
 
     @Id

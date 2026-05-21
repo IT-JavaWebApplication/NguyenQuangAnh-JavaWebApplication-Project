@@ -5,10 +5,13 @@ import com.smartacademic.dto.UserProfileDTO;
 import com.smartacademic.entity.Equipment;
 import com.smartacademic.entity.MentoringSession;
 import com.smartacademic.entity.User;
+import com.smartacademic.enums.SessionStatus;
 import com.smartacademic.service.BorrowingService;
 import com.smartacademic.service.EquipmentService;
 import com.smartacademic.service.MentoringSessionService;
 import com.smartacademic.service.UserService;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,8 +19,6 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import jakarta.servlet.http.HttpSession;
-import jakarta.validation.Valid;
 import java.util.List;
 
 @Controller
@@ -40,19 +41,27 @@ public class LecturerController {
         return (User) session.getAttribute("currentUser");
     }
 
-    // GET /lecturer/dashboard
     @GetMapping("/dashboard")
     public String dashboard(HttpSession session, Model model) {
         User user = getCurrentUser(session);
         List<MentoringSession> pendingSessions = mentoringSessionService.getPendingSessionsByLecturer(user.getId());
         List<MentoringSession> allSessions = mentoringSessionService.getAllSessionsByLecturer(user.getId());
+
+        long pending   = allSessions.stream().filter(s -> s.getStatus() == SessionStatus.PENDING).count();
+        long completed = allSessions.stream().filter(s -> s.getStatus() == SessionStatus.COMPLETED).count();
+        long cancelled = allSessions.stream().filter(s -> s.getStatus() == SessionStatus.CANCELLED).count();
+
         model.addAttribute("user", user);
         model.addAttribute("pendingSessions", pendingSessions);
         model.addAttribute("allSessions", allSessions);
+        model.addAttribute("pendingCount", pending);
+        model.addAttribute("completedCount", completed);
+        model.addAttribute("cancelledCount", cancelled);
+        model.addAttribute("totalCount", allSessions.size());
+        model.addAttribute("activePage", "dashboard");
         return "lecturer/dashboard";
     }
 
-    // GET /lecturer/profile - CORE-03
     @GetMapping("/profile")
     public String profilePage(HttpSession session, Model model) {
         User user = getCurrentUser(session);
@@ -65,52 +74,70 @@ public class LecturerController {
         if (fullUser.getLecturerInfo() != null) {
             dto.setSpecialization(fullUser.getLecturerInfo().getSpecialization());
             dto.setBio(fullUser.getLecturerInfo().getBio());
+            dto.setSessionFee(fullUser.getLecturerInfo().getSessionFee());
             if (fullUser.getLecturerInfo().getDepartment() != null) {
                 dto.setDepartmentId(fullUser.getLecturerInfo().getDepartment().getId());
             }
         }
         model.addAttribute("user", fullUser);
-        model.addAttribute("profileDTO", dto);
+        if (!model.containsAttribute("profileDTO")) {
+            model.addAttribute("profileDTO", dto);
+        }
         model.addAttribute("departments", userService.getAllDepartments());
+        model.addAttribute("activePage", "profile");
         return "lecturer/profile";
     }
 
-    // POST /lecturer/profile - CORE-03
     @PostMapping("/profile")
-    public String updateProfile(@Valid @ModelAttribute UserProfileDTO profileDTO,
+    public String updateProfile(@Valid @ModelAttribute("profileDTO") UserProfileDTO profileDTO,
                                 BindingResult result,
                                 HttpSession session,
+                                Model model,
                                 RedirectAttributes redirectAttributes) {
-        if (result.hasErrors()) return "lecturer/profile";
+        if (result.hasErrors()) {
+            model.addAttribute("user", userService.getUserById(getCurrentUser(session).getId()));
+            model.addAttribute("departments", userService.getAllDepartments());
+            model.addAttribute("activePage", "profile");
+            return "lecturer/profile";
+        }
         User user = getCurrentUser(session);
         userService.updateProfile(user.getId(), profileDTO);
         redirectAttributes.addFlashAttribute("successMsg", "Cập nhật hồ sơ thành công");
         return "redirect:/lecturer/profile";
     }
 
-    // GET /lecturer/sessions/{id}/evaluate - CORE-06
     @GetMapping("/sessions/{id}/evaluate")
-    public String evaluatePage(@PathVariable Long id, HttpSession session, Model model) {
+    public String evaluatePage(@PathVariable Long id, HttpSession session, Model model,
+                               RedirectAttributes redirectAttributes) {
         User user = getCurrentUser(session);
         MentoringSession sess = mentoringSessionService.getSessionById(id);
 
-        // Kiểm tra quyền
         if (!sess.getLecturer().getId().equals(user.getId())) {
+            redirectAttributes.addFlashAttribute("errorMsg", "Bạn không có quyền đánh giá buổi tư vấn này");
+            return "redirect:/lecturer/dashboard";
+        }
+        if (sess.getStatus() == SessionStatus.COMPLETED) {
+            redirectAttributes.addFlashAttribute("errorMsg", "Buổi tư vấn này đã được đánh giá");
             return "redirect:/lecturer/dashboard";
         }
 
         List<Equipment> equipments = equipmentService.getAllActive();
+        EvaluationDTO dto = new EvaluationDTO();
+        dto.setSessionId(id);
+
         model.addAttribute("user", user);
         model.addAttribute("session", sess);
         model.addAttribute("equipments", equipments);
-        model.addAttribute("evaluationDTO", new EvaluationDTO());
+        if (!model.containsAttribute("evaluationDTO")) {
+            model.addAttribute("evaluationDTO", dto);
+        }
+        model.addAttribute("activePage", "dashboard");
         return "lecturer/evaluate";
     }
 
-    // POST /lecturer/sessions/{id}/evaluate - CORE-06 (Transaction)
     @PostMapping("/sessions/{id}/evaluate")
     public String submitEvaluation(@PathVariable Long id,
-                                   @Valid @ModelAttribute EvaluationDTO evaluationDTO,
+                                   @Valid @ModelAttribute("evaluationDTO") EvaluationDTO evaluationDTO,
                                    BindingResult result,
                                    HttpSession session,
                                    RedirectAttributes redirectAttributes,
@@ -122,6 +149,7 @@ public class LecturerController {
             model.addAttribute("session", mentoringSessionService.getSessionById(id));
             model.addAttribute("equipments", equipmentService.getAllActive());
             model.addAttribute("user", user);
+            model.addAttribute("activePage", "dashboard");
             return "lecturer/evaluate";
         }
 
@@ -129,7 +157,7 @@ public class LecturerController {
             User user = getCurrentUser(session);
             borrowingService.evaluateAndAssignEquipment(user.getId(), evaluationDTO);
             redirectAttributes.addFlashAttribute("successMsg",
-                    "Đánh giá thành công! Phiếu mượn thiết bị đã được tạo và chuyển sang trạng thái chờ cấp phát.");
+                    "Đánh giá thành công! Phiếu mượn thiết bị đã được tạo (nếu có) và chuyển sang chờ cấp phát.");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("errorMsg", e.getMessage());
         }

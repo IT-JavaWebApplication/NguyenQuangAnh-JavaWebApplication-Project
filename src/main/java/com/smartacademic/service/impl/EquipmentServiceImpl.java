@@ -78,6 +78,8 @@ public class EquipmentServiceImpl implements EquipmentService {
         equipment.setQuantity(dto.getQuantity());
         equipment.setUnit(dto.getUnit() != null ? dto.getUnit() : "Cái");
         equipment.setIsActive(dto.getIsActive() != null ? dto.getIsActive() : true);
+        equipment.setDepositAmount(dto.getDepositAmount() != null
+                ? dto.getDepositAmount() : java.math.BigDecimal.ZERO);
         if (dto.getAvailable() != null) {
             equipment.setAvailable(dto.getAvailable());
         }

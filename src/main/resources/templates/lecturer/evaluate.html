@@ -1,84 +1,138 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head>
-    <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Đánh giá sinh viên — LabNexus</title>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
+    <th:block th:replace="~{fragments/layout :: pageHead('Đánh giá buổi tư vấn')}"></th:block>
 </head>
-<body>
-<div class="app-shell">
-    <aside class="sidebar" th:insert="~{fragments/layout :: sidebar('evaluations', 'LECTURER')}"></aside>
+<body class="bg-slate-50">
 
-    <main>
-        <header class="topbar">
-            <div>
-                <div class="topbar-title">Đánh giá sinh viên</div>
-                <div class="topbar-subtitle" th:text="'Phiên tư vấn #' + ${session?.id}">Session #1</div>
+<aside th:replace="~{fragments/layout :: sidebar('LECTURER', ${activePage})}"></aside>
+
+<div class="ml-64 min-h-screen">
+    <header th:replace="~{fragments/layout :: topbar('Đánh giá & Chỉ định thiết bị')}"></header>
+
+    <main class="p-8">
+        <div th:replace="~{fragments/layout :: flash}"></div>
+
+        <!-- Session info -->
+        <div class="app-card p-6 mb-6">
+            <div class="flex justify-between items-start">
+                <div>
+                    <div class="text-xs text-slate-500 mb-1">Buổi tư vấn #<span th:text="${session.id}"></span></div>
+                    <h2 class="text-xl font-bold text-slate-900"
+                        th:text="${session.student.profile != null ? session.student.profile.fullName : session.student.username}">SV</h2>
+                    <div class="text-sm text-slate-500 mt-1" th:text="${session.student.email}">email</div>
+                </div>
+                <div class="text-right">
+                    <div class="font-semibold text-slate-700"
+                         th:text="${#temporals.format(session.sessionDate, 'EEEE, dd/MM/yyyy')}">Date</div>
+                    <div class="text-sm text-slate-500"
+                         th:text="${#temporals.format(session.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(session.endTime, 'HH:mm')}">Time</div>
+                </div>
             </div>
-            <div class="topbar-spacer"></div>
-            <a th:href="@{/lecturer/dashboard}" class="btn btn-outline btn-sm">
-                <i class="fa-solid fa-arrow-left"></i> Quay lại
-            </a>
-        </header>
+            <div th:if="${session.note}" class="mt-4 p-3 bg-slate-50 border-l-4 border-blue-400 text-sm text-slate-700">
+                <i class="fa-solid fa-comment-dots mr-1 text-blue-500"></i>
+                <span th:text="${session.note}"></span>
+            </div>
+        </div>
 
-        <div class="content-wrapper">
-            <div class="form-row">
-                <div style="flex: 1;">
-                    <div class="card" style="margin-bottom: 24px;">
-                        <h3 style="margin-top: 0; font-family: 'Syne', sans-serif;">Thông tin phiên hẹn</h3>
-                        <div style="margin-bottom: 12px;"><strong>Sinh viên:</strong> <span th:text="${session?.student?.fullName}">Nguyễn Văn A</span></div>
-                        <div style="margin-bottom: 12px;"><strong>Chủ đề:</strong> <span th:text="${session?.topic}">AI Research</span></div>
-                        <div><strong>Thời gian:</strong> <span th:text="${#temporals.format(session?.appointmentTime, 'dd/MM/yyyy HH:mm')}">20/10/2023 14:00</span></div>
+        <form th:action="@{/lecturer/sessions/{id}/evaluate(id=${session.id})}" th:object="${evaluationDTO}" method="post" class="space-y-6">
+
+            <!-- Evaluation scores -->
+            <div class="app-card p-6">
+                <h3 class="font-bold text-slate-900 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-star text-amber-500"></i> Đánh giá năng lực sinh viên
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Điểm kỹ năng (1-10) *</label>
+                        <input type="number" th:field="*{skillScore}" min="1" max="10" required
+                               th:errorclass="is-invalid"
+                               class="app-input text-2xl font-bold text-center"/>
+                        <span class="text-xs text-red-600 mt-1 block" th:if="${#fields.hasErrors('skillScore')}" th:errors="*{skillScore}"></span>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Điểm thái độ (1-10) *</label>
+                        <input type="number" th:field="*{attitudeScore}" min="1" max="10" required
+                               th:errorclass="is-invalid"
+                               class="app-input text-2xl font-bold text-center"/>
+                        <span class="text-xs text-red-600 mt-1 block" th:if="${#fields.hasErrors('attitudeScore')}" th:errors="*{attitudeScore}"></span>
                     </div>
                 </div>
 
-                <div style="flex: 2;">
-                    <form class="card" th:action="@{/lecturer/evaluate/{id}(id=${session?.id})}" method="post">
+                <div class="mt-4">
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Nhận xét</label>
+                    <textarea th:field="*{comments}" rows="3" class="app-input"
+                              placeholder="Đánh giá tổng quan về buổi tư vấn..."></textarea>
+                </div>
 
-                        <div class="form-group">
-                            <label class="form-label">Chọn điểm số (1-10) <span>*</span></label>
-                            <div class="score-grid">
-                                <th:block th:each="i : ${#numbers.sequence(1, 10)}">
-                                    <input type="radio" th:id="'sc-' + ${i}" name="score" th:value="${i}" class="score-radio" required>
-                                    <label th:for="'sc-' + ${i}" class="score-btn" th:text="${i}"></label>
-                                </th:block>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Đề xuất mượn thiết bị</label>
-                            <div class="equip-list">
-                                <div class="equip-item-container" th:each="equipment : ${equipments}">
-                                    <input type="checkbox" th:id="'eq-' + ${equipment.id}" name="equipIds" th:value="${equipment.id}" class="equip-checkbox">
-                                    <label th:for="'eq-' + ${equipment.id}" class="equip-checkbox-label">
-                                        <i class="fa-regular fa-square"></i>
-                                        <span th:text="${equipment.name}">Máy Oscilloscope</span>
-                                    </label>
-                                    <input type="number" th:name="'qty_' + ${equipment.id}" class="form-control equip-qty-input" min="1" value="1" placeholder="SL">
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label">Nhận xét chuyên môn</label>
-                            <textarea class="form-control" name="comment" rows="5" placeholder="Mô tả năng lực, thái độ, điểm cần cải thiện của sinh viên..."></textarea>
-                        </div>
-
-                        <div class="alert alert-info">
-                            <i class="fa-solid fa-circle-info"></i>
-                            <span>Sau khi submit: lịch hẹn → COMPLETED, phiếu mượn thiết bị → chờ Admin duyệt xuất kho.</span>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-100" style="padding: 12px; font-size: 1rem;">
-                            <i class="fa-solid fa-paper-plane"></i> Hoàn thành đánh giá
-                        </button>
-                    </form>
+                <div class="mt-4">
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">Khuyến nghị</label>
+                    <textarea th:field="*{recommendations}" rows="2" class="app-input"
+                              placeholder="Gợi ý cho sinh viên cải thiện..."></textarea>
                 </div>
             </div>
-        </div>
+
+            <!-- Equipment assignment -->
+            <div class="app-card p-6">
+                <h3 class="font-bold text-slate-900 mb-1 flex items-center gap-2">
+                    <i class="fa-solid fa-boxes-stacked text-blue-600"></i> Chỉ định thiết bị / tài liệu
+                </h3>
+                <p class="text-xs text-slate-500 mb-4">
+                    Chọn thiết bị/tài liệu cần cấp cho sinh viên. Sau khi lưu, phiếu mượn sẽ tự động chuyển sang trạng thái <b>"Chờ cấp phát"</b>
+                    để Admin xác nhận xuất kho.
+                </p>
+
+                <div class="overflow-x-auto border border-slate-200 rounded-lg">
+                    <table class="w-full text-sm">
+                        <thead class="bg-slate-50 text-xs font-bold text-slate-600 uppercase">
+                        <tr>
+                            <th class="px-3 py-2 text-center w-12">Chọn</th>
+                            <th class="px-3 py-2 text-left">Mã</th>
+                            <th class="px-3 py-2 text-left">Tên</th>
+                            <th class="px-3 py-2 text-center">Tồn kho</th>
+                            <th class="px-3 py-2 text-center w-32">Số lượng cấp</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                        <tr th:each="equip, equipStat : ${equipments}">
+                            <td class="px-3 py-2 text-center">
+                                <input type="checkbox" name="equipmentIds" th:value="${equip.id}" class="rounded"/>
+                            </td>
+                            <td class="px-3 py-2 font-mono text-xs text-slate-500" th:text="${equip.code}">CODE</td>
+                            <td class="px-3 py-2 text-slate-800" th:text="${equip.name}">Name</td>
+                            <td class="px-3 py-2 text-center">
+                                <span class="text-emerald-700 font-semibold" th:text="${equip.available}">0</span>
+                                <span class="text-slate-400 text-xs" th:text="'/' + ${equip.quantity}">/0</span>
+                                <span class="text-slate-500 text-xs ml-1" th:text="${equip.unit}">Cái</span>
+                            </td>
+                            <td class="px-3 py-2 text-center">
+                                <input type="number" name="equipmentQuantities" value="1" min="1"
+                                       th:max="${equip.available}"
+                                       class="w-20 text-center app-input py-1.5"/>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(equipments)}">
+                            <td colspan="5" class="text-center text-slate-400 py-6">Chưa có thiết bị khả dụng</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+            <div class="flex justify-end gap-3">
+                <a th:href="@{/lecturer/dashboard}"
+                   class="px-5 py-2.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 font-semibold">
+                    Hủy
+                </a>
+                <button type="submit" class="btn-primary-main">
+                    <i class="fa-solid fa-floppy-disk"></i> Lưu đánh giá &amp; Tạo phiếu mượn
+                </button>
+            </div>
+        </form>
     </main>
 </div>
+
 </body>
 </html>

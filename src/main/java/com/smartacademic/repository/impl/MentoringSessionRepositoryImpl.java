@@ -1,9 +1,9 @@
 package com.smartacademic.repository.impl;
 
+import com.smartacademic.config.HibernateSessionProvider;
 import com.smartacademic.entity.MentoringSession;
 import com.smartacademic.enums.SessionStatus;
 import com.smartacademic.repository.MentoringSessionRepository;
-import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -16,7 +16,7 @@ import java.util.Optional;
 public class MentoringSessionRepositoryImpl implements MentoringSessionRepository {
 
     @Autowired
-    private SessionFactory sessionFactory;
+    private HibernateSessionProvider sessionFactory;
 
     @Override
     public MentoringSession save(MentoringSession session) {
@@ -72,14 +72,14 @@ public class MentoringSessionRepositoryImpl implements MentoringSessionRepositor
 
     @Override
     public boolean isSlotTaken(Long lecturerId, LocalDate date, LocalTime startTime) {
-        // CORE-05: Kiểm tra xung đột khung giờ
+        // Kiểm tra xung đột khung giờ.
         Long count = sessionFactory.getCurrentSession()
                 .createQuery(
                         "SELECT COUNT(ms) FROM MentoringSession ms " +
                                 "WHERE ms.lecturer.id = :lecturerId " +
                                 "AND ms.sessionDate = :date " +
                                 "AND ms.startTime = :startTime " +
-                                "AND ms.status IN ('PENDING', 'CONFIRMED')", Long.class)
+                                "AND ms.status IN ('PENDING_PAYMENT', 'PENDING', 'CONFIRMED')", Long.class)
                 .setParameter("lecturerId", lecturerId)
                 .setParameter("date", date)
                 .setParameter("startTime", startTime)

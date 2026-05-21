@@ -1,10 +1,11 @@
 package com.smartacademic.entity;
 
 import com.smartacademic.enums.SessionStatus;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -17,6 +18,7 @@ import java.time.LocalTime;
         ))
 @Data
 @NoArgsConstructor
+@ToString(exclude = {"student", "lecturer", "evaluation", "borrowingRecord"})
 public class MentoringSession {
 
     @Id
@@ -56,7 +58,6 @@ public class MentoringSession {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    // Relationships
     @OneToOne(mappedBy = "session", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private AcademicEvaluation evaluation;
 

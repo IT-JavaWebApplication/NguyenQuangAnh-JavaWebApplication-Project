@@ -26,5 +26,10 @@ public class EquipmentDTO {
     private Integer available;
 
     private String unit = "Cái";
+
+    /** Tiền đặt cọc khi mượn thiết bị (VND). 0 = không yêu cầu đặt cọc. */
+    @Min(value = 0, message = "Phí đặt cọc không được âm")
+    private java.math.BigDecimal depositAmount = java.math.BigDecimal.ZERO;
+
     private Boolean isActive = true;
 }

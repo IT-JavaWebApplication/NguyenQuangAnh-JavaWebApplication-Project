@@ -1,70 +1,96 @@
 <!DOCTYPE html>
-<html class="light" lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head>
-  <meta charset="utf-8"/>
-  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-  <title>Phiếu Mượn Thiết Bị | Rikkei Academy</title>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
-  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-  <link rel="stylesheet" th:href="@{/css/admin.css}"/>
-  <link rel="stylesheet" th:href="@{/css/dashboard.css}"/>
+    <th:block th:replace="~{fragments/layout :: pageHead('Cấp phát thiết bị')}"></th:block>
 </head>
-<body class="admin-layout">
+<body class="bg-slate-50">
 
-<aside th:replace="~{fragments/admin_sidebar :: sidebar('borrowing')}"></aside>
-<div class="admin-main">
-  <div class="mb-8">
-    <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Xét Duyệt & Cấp Phát Thiết Bị</h1>
-    <p class="text-sm text-slate-500 mt-1">Điều phối lịch trình bàn giao, hoàn trả thiết bị vật tư thực hành</p>
-  </div>
+<aside th:replace="~{fragments/layout :: sidebar('ADMIN', ${activePage})}"></aside>
 
-  <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-    <table class="w-full text-left border-collapse">
-      <thead>
-      <tr class="bg-slate-50/75 border-b border-slate-100 text-xs font-bold text-slate-500 uppercase tracking-wider">
-        <th class="px-6 py-4">Sinh Viên</th>
-        <th class="px-6 py-4">Buổi Hẹn Đăng Ký</th>
-        <th class="px-6 py-4">Ngày yêu cầu</th>
-        <th class="px-6 py-4">Trạng thái</th>
-        <th class="px-6 py-4 text-right">Thao tác xử lý</th>
-      </tr>
-      </thead>
-      <tbody class="divide-y divide-slate-50">
-      <tr th:each="br : ${borrowingRecords}" class="data-table-row hover:bg-slate-50/50 transition-colors">
-        <td class="px-6 py-4">
-          <div class="font-bold text-slate-900" th:text="${br.mentoringSession?.student?.fullName}">Trần Minh Triết</div>
-          <div class="text-xs text-slate-400" th:text="${br.mentoringSession?.student?.username}">SV88910</div>
-        </td>
-        <td class="px-6 py-4 text-slate-700 font-medium">
-          <span th:text="${'Lab Session - Slot ' + br.mentoringSession?.timeSlot}">Slot 2</span>
-          <div class="text-xs text-slate-400" th:text="${'GV: ' + br.mentoringSession?.lecturer?.fullName}">Dr. Thorne</div>
-        </td>
-        <td class="px-6 py-4 text-slate-500 text-sm" th:text="${#temporals.format(br.issuedAt, 'dd/MM/yyyy HH:mm')}">18/05/2026</td>
-        <td class="px-6 py-4">
-          <span class="badge" th:classappend="${br.status?.name() == 'RETURNED' ? 'bg-success' : (br.status?.name() == 'PENDING' ? 'bg-warning' : (br.status?.name() == 'APPROVED' ? 'bg-info' : 'bg-danger'))}" th:text="${br.status}">PENDING</span>
-        </td>
-        <td class="px-6 py-4 text-right flex justify-end gap-2">
-          <form th:if="${br.status?.name() == 'APPROVED'}" th:action="@{/admin/borrowing/{id}/issue(id=${br.id})}" method="post">
-            <button type="submit" class="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-all">
-              <span class="material-symbols-outlined text-[16px]">outbox</span> Xuất kho
-            </button>
-          </form>
-          <form th:if="${br.status?.name() == 'ISSUED'}" th:action="@{/admin/borrowing/{id}/return(id=${br.id})}" method="post">
-            <button type="submit" class="inline-flex items-center gap-1 bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl transition-all">
-              <span class="material-symbols-outlined text-[16px]">move_to_inbox</span> Thu hồi
-            </button>
-          </form>
-        </td>
-      </tr>
-      <tr th:if="${#lists.isEmpty(borrowingRecords)}">
-        <td colspan="5" class="px-6 py-12 text-center text-slate-400">Không có đơn yêu cầu mượn thiết bị nào hiện tại.</td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
+<div class="ml-64 min-h-screen">
+    <header th:replace="~{fragments/layout :: topbar('Phiếu mượn chờ cấp phát')}"></header>
+
+    <main class="p-8">
+        <div th:replace="~{fragments/layout :: flash}"></div>
+
+        <div class="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 text-sm text-amber-900">
+            <p><i class="fa-solid fa-triangle-exclamation mr-1"></i>
+            Khi bấm "Xác nhận xuất kho", hệ thống sẽ kiểm tra số lượng tồn kho cho từng thiết bị. Nếu thiếu, giao dịch bị từ chối — kho không bị trừ và trạng thái phiếu giữ nguyên.</p>
+        </div>
+
+        <div class="space-y-4">
+            <article th:each="r : ${pendingRecords}" class="app-card overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-start">
+                    <div>
+                        <div class="text-xs text-slate-500">Phiếu mượn #<span th:text="${r.id}"></span></div>
+                        <h3 class="font-bold text-slate-900 mt-0.5"
+                            th:text="${r.student.profile != null ? r.student.profile.fullName : r.student.username}">SV</h3>
+                        <div class="text-xs text-slate-500 mt-1">
+                            <span th:text="${r.student.email}">email</span>
+                            <span th:if="${r.dueDate != null}">
+                                • Hạn trả: <span class="font-medium" th:text="${#temporals.format(r.dueDate, 'dd/MM/yyyy')}">date</span>
+                            </span>
+                        </div>
+                    </div>
+                    <span class="badge-status badge-pendingdis">Chờ cấp phát</span>
+                </div>
+
+                <div class="px-6 py-4">
+                    <table class="w-full text-sm">
+                        <thead class="text-xs font-bold text-slate-500 uppercase">
+                        <tr>
+                            <th class="text-left pb-2">Mã</th>
+                            <th class="text-left pb-2">Tên</th>
+                            <th class="text-center pb-2">Yêu cầu</th>
+                            <th class="text-center pb-2">Tồn kho</th>
+                            <th class="text-center pb-2">Trạng thái</th>
+                        </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                        <tr th:each="d : ${r.details}">
+                            <td class="font-mono text-xs text-slate-500 py-2" th:text="${d.equipment.code}">CODE</td>
+                            <td class="py-2" th:text="${d.equipment.name}">Tên</td>
+                            <td class="py-2 text-center font-bold" th:text="${d.quantity} + ' ' + ${d.equipment.unit}">SL</td>
+                            <td class="py-2 text-center"
+                                th:classappend="${d.equipment.available >= d.quantity ? 'text-emerald-700 font-semibold' : 'text-red-600 font-semibold'}"
+                                th:text="${d.equipment.available}">0</td>
+                            <td class="py-2 text-center">
+                                <span th:if="${d.equipment.available >= d.quantity}"
+                                      class="text-xs text-emerald-700">✓ Đủ</span>
+                                <span th:unless="${d.equipment.available >= d.quantity}"
+                                      class="text-xs text-red-600">✗ Thiếu</span>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="px-6 py-3 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                    <a th:href="@{/admin/borrowing/{id}(id=${r.id})}"
+                       class="px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200 rounded-lg">
+                        Xem chi tiết
+                    </a>
+                    <form th:action="@{/admin/borrowing/{id}/dispatch(id=${r.id})}" method="post"
+                          data-confirm="Hệ thống sẽ kiểm tra tồn kho và trừ số lượng tự động. Bạn có chắc muốn xác nhận xuất kho phiếu này?"
+                          data-confirm-title="Xác nhận xuất kho"
+                          data-confirm-ok="Xuất kho"
+                          data-confirm-style="primary">
+                        <button type="submit" class="btn-primary-main text-sm">
+                            <i class="fa-solid fa-truck-fast"></i> Xác nhận xuất kho
+                        </button>
+                    </form>
+                </div>
+            </article>
+
+            <div th:if="${#lists.isEmpty(pendingRecords)}" class="app-card p-12 text-center text-slate-400">
+                <i class="fa-solid fa-circle-check text-4xl mb-3 block text-emerald-400"></i>
+                <p class="text-lg">Không có phiếu mượn nào chờ cấp phát</p>
+            </div>
+        </div>
+    </main>
 </div>
+
+<div th:replace="~{fragments/layout :: confirmModal}"></div>
 
 </body>
 </html>

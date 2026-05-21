@@ -1,8 +1,8 @@
 package com.smartacademic.repository.impl;
 
+import com.smartacademic.config.HibernateSessionProvider;
 import com.smartacademic.entity.BorrowingRecord;
 import com.smartacademic.repository.BorrowingRepository;
-import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -13,7 +13,7 @@ import java.util.Optional;
 public class BorrowingRepositoryImpl implements BorrowingRepository {
 
     @Autowired
-    private SessionFactory sessionFactory;
+    private HibernateSessionProvider sessionFactory;
 
     @Override
     public BorrowingRecord save(BorrowingRecord record) {

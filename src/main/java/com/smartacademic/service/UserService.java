@@ -14,6 +14,7 @@ public interface UserService {
     Optional<User> login(LoginDTO dto);
     User getUserById(Long id);
     void updateProfile(Long userId, UserProfileDTO dto);
+    void changePassword(Long userId, String currentPassword, String newPassword);
     List<User> getLecturersByDepartment(Long departmentId);
     List<Department> getAllDepartments();
     List<User> getLecturers();

@@ -1,49 +1,41 @@
 package com.smartacademic.repository.impl;
 
+import com.smartacademic.config.HibernateSessionProvider;
 import com.smartacademic.entity.User;
 import com.smartacademic.repository.UserRepository;
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
 public class UserRepositoryImpl implements UserRepository {
 
-    @PersistenceContext
-    private EntityManager entityManager;
-
     @Autowired
-    private SessionFactory sessionFactory;
+    private HibernateSessionProvider session;
 
     @Override
     public User save(User user) {
-        sessionFactory.getCurrentSession().persist(user);
+        session.getCurrentSession().persist(user);
         return user;
     }
 
     @Override
     public Optional<User> findById(Long id) {
-        User user = sessionFactory.getCurrentSession().get(User.class, id);
-        return Optional.ofNullable(user);
+        return Optional.ofNullable(session.getCurrentSession().get(User.class, id));
     }
 
     @Override
     public Optional<User> findByUsername(String username) {
-        String hql = "FROM User u WHERE u.username = :username";
-        return entityManager.createQuery(hql, User.class)
+        return session.getCurrentSession()
+                .createQuery("FROM User u WHERE u.username = :username", User.class)
                 .setParameter("username", username)
-                .getResultStream()
-                .findFirst();
+                .uniqueResultOptional();
     }
 
     @Override
     public Optional<User> findByEmail(String email) {
-        return sessionFactory.getCurrentSession()
+        return session.getCurrentSession()
                 .createQuery("FROM User u WHERE u.email = :email AND u.isActive = true", User.class)
                 .setParameter("email", email)
                 .uniqueResultOptional();
@@ -51,7 +43,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public boolean existsByUsername(String username) {
-        Long count = sessionFactory.getCurrentSession()
+        Long count = session.getCurrentSession()
                 .createQuery("SELECT COUNT(u) FROM User u WHERE u.username = :username", Long.class)
                 .setParameter("username", username)
                 .uniqueResult();
@@ -60,7 +52,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public boolean existsByEmail(String email) {
-        Long count = sessionFactory.getCurrentSession()
+        Long count = session.getCurrentSession()
                 .createQuery("SELECT COUNT(u) FROM User u WHERE u.email = :email", Long.class)
                 .setParameter("email", email)
                 .uniqueResult();
@@ -68,14 +60,14 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public List<User> findAll() {
-        return sessionFactory.getCurrentSession()
+    public java.util.List<User> findAll() {
+        return session.getCurrentSession()
                 .createQuery("FROM User u WHERE u.isActive = true ORDER BY u.createdAt DESC", User.class)
                 .list();
     }
 
     @Override
     public void update(User user) {
-        sessionFactory.getCurrentSession().merge(user);
+        session.getCurrentSession().merge(user);
     }
 }

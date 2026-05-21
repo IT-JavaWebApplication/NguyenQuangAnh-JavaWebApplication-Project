@@ -1,9 +1,10 @@
 package com.smartacademic.enums;
 
 public enum SessionStatus {
+    PENDING_PAYMENT("Chờ thanh toán"),
     PENDING("Chờ xác nhận"),
     CONFIRMED("Đã xác nhận"),
-    COMPLETED("Đã hoàn thành"),
+    COMPLETED("Hoàn thành"),
     CANCELLED("Đã hủy");
 
     private final String displayName;

@@ -4,14 +4,15 @@ import com.smartacademic.enums.Role;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users")
 @Data
 @NoArgsConstructor
+@ToString(exclude = {"profile", "lecturerInfo", "password"})
 public class User {
 
     @Id

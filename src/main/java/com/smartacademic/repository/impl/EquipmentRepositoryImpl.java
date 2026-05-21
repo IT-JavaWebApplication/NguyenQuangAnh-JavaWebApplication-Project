@@ -1,8 +1,8 @@
 package com.smartacademic.repository.impl;
 
+import com.smartacademic.config.HibernateSessionProvider;
 import com.smartacademic.entity.Equipment;
 import com.smartacademic.repository.EquipmentRepository;
-import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
@@ -13,7 +13,7 @@ import java.util.Optional;
 public class EquipmentRepositoryImpl implements EquipmentRepository {
 
     @Autowired
-    private SessionFactory sessionFactory;
+    private HibernateSessionProvider sessionFactory;
 
     @Override
     public Equipment save(Equipment equipment) {

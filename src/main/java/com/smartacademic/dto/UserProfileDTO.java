@@ -3,6 +3,8 @@ package com.smartacademic.dto;
 import lombok.Data;
 import jakarta.validation.constraints.*;
 
+import java.math.BigDecimal;
+
 @Data
 public class UserProfileDTO {
 
@@ -21,4 +23,8 @@ public class UserProfileDTO {
     private String specialization;
     private String bio;
     private Long departmentId;
+
+    /** Giảng viên: phí cho 1 buổi tư vấn (VND). 0 = miễn phí. */
+    @DecimalMin(value = "0", message = "Phí buổi tư vấn không được âm")
+    private BigDecimal sessionFee;
 }

@@ -1,5 +1,6 @@
 package com.smartacademic.service.impl;
 
+import com.smartacademic.config.HibernateSessionProvider;
 import com.smartacademic.dto.EvaluationDTO;
 import com.smartacademic.entity.*;
 import com.smartacademic.enums.BorrowingStatus;
@@ -8,11 +9,13 @@ import com.smartacademic.repository.BorrowingRepository;
 import com.smartacademic.repository.EquipmentRepository;
 import com.smartacademic.repository.MentoringSessionRepository;
 import com.smartacademic.service.BorrowingService;
-import org.hibernate.SessionFactory;
+import com.smartacademic.service.EmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,11 +34,18 @@ public class BorrowingServiceImpl implements BorrowingService {
     private EquipmentRepository equipmentRepository;
 
     @Autowired
-    private SessionFactory sessionFactory;
+    private HibernateSessionProvider sessionFactory;
 
-  
+    @Autowired
+    private EmailService emailService;
+
+    /**
+     * Giảng viên đánh giá buổi tư vấn + (tuỳ chọn) tạo phiếu mượn thiết bị.
+     * Toàn bộ thao tác (update session, persist evaluation, persist phiếu mượn)
+     * nằm trong 1 transaction — lỗi giữa chừng sẽ rollback hết.
+     */
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void evaluateAndAssignEquipment(Long lecturerId, EvaluationDTO dto) {
 
         MentoringSession session = sessionRepository.findById(dto.getSessionId())
@@ -60,18 +70,22 @@ public class BorrowingServiceImpl implements BorrowingService {
         evaluation.setComments(dto.getComments());
         evaluation.setRecommendations(dto.getRecommendations());
         sessionFactory.getCurrentSession().persist(evaluation);
+
         if (dto.getEquipmentIds() != null && !dto.getEquipmentIds().isEmpty()) {
             BorrowingRecord borrowingRecord = new BorrowingRecord();
             borrowingRecord.setSession(session);
             borrowingRecord.setStudent(session.getStudent());
             borrowingRecord.setStatus(BorrowingStatus.PENDING_DISPATCH);
+            borrowingRecord.setDueDate(LocalDate.now().plusDays(7));
             sessionFactory.getCurrentSession().persist(borrowingRecord);
 
             List<BorrowingDetail> details = new ArrayList<>();
             for (int i = 0; i < dto.getEquipmentIds().size(); i++) {
                 Long equipId = dto.getEquipmentIds().get(i);
+                if (equipId == null) continue;
                 Integer qty = (dto.getEquipmentQuantities() != null && i < dto.getEquipmentQuantities().size())
                         ? dto.getEquipmentQuantities().get(i) : 1;
+                if (qty == null || qty <= 0) qty = 1;
 
                 Equipment equipment = equipmentRepository.findById(equipId)
                         .orElseThrow(() -> new RuntimeException("Không tìm thấy thiết bị ID: " + equipId));
@@ -82,11 +96,22 @@ public class BorrowingServiceImpl implements BorrowingService {
             }
             borrowingRecord.setDetails(details);
         }
+
+        User student = session.getStudent();
+        if (student != null && student.getEmail() != null) {
+            String name = student.getProfile() != null
+                    ? student.getProfile().getFullName()
+                    : student.getUsername();
+            emailService.sendEvaluationReady(student.getEmail(), name, session);
+        }
     }
 
-
+    /**
+     * Admin xác nhận xuất kho: check toàn bộ tồn kho trước, đủ thì trừ và chuyển
+     * status DISPATCHED; thiếu thì throw để rollback và báo lỗi tổng hợp.
+     */
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(propagation = Propagation.REQUIRED, rollbackFor = Exception.class)
     public void confirmDispatch(Long borrowingRecordId, Long adminId) {
         BorrowingRecord record = borrowingRepository.findById(borrowingRecordId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu mượn"));
@@ -95,7 +120,7 @@ public class BorrowingServiceImpl implements BorrowingService {
             throw new IllegalStateException("Phiếu mượn không ở trạng thái chờ cấp phát");
         }
 
-        // Load details
+        @SuppressWarnings("unchecked")
         List<BorrowingDetail> details = sessionFactory.getCurrentSession()
                 .createQuery(
                         "SELECT bd FROM BorrowingDetail bd " +
@@ -107,29 +132,29 @@ public class BorrowingServiceImpl implements BorrowingService {
         StringBuilder errorMsg = new StringBuilder();
         for (BorrowingDetail detail : details) {
             Equipment eq = detail.getEquipment();
-            if (eq.getAvailable() < detail.getQuantity()) {
+            if (eq.getAvailable() == null || eq.getAvailable() < detail.getQuantity()) {
                 errorMsg.append(String.format(
-                        "Thiết bị [%s] không đủ tồn kho. Cần: %d, Còn lại: %d\n",
-                        eq.getName(), detail.getQuantity(), eq.getAvailable()
-                ));
+                        "• [%s] %s — Cần: %d, Còn: %d%n",
+                        eq.getCode(), eq.getName(), detail.getQuantity(),
+                        eq.getAvailable() == null ? 0 : eq.getAvailable()));
             }
         }
 
-        // Nếu bất kỳ thiết bị nào không đủ
         if (errorMsg.length() > 0) {
-            throw new IllegalStateException("Không thể xuất kho:\n" + errorMsg);
+            throw new IllegalStateException("Không đủ tồn kho:\n" + errorMsg);
         }
 
-        // Đủ tồn kho
         for (BorrowingDetail detail : details) {
             Equipment eq = detail.getEquipment();
             eq.setAvailable(eq.getAvailable() - detail.getQuantity());
             equipmentRepository.update(eq);
         }
 
-        // Cập nhật phiếu mượn
         record.setStatus(BorrowingStatus.DISPATCHED);
         record.setDispatchedAt(LocalDateTime.now());
+        if (record.getDueDate() == null) {
+            record.setDueDate(LocalDate.now().plusDays(7));
+        }
         borrowingRepository.update(record);
     }
 
@@ -142,7 +167,13 @@ public class BorrowingServiceImpl implements BorrowingService {
     @Override
     @Transactional(readOnly = true)
     public BorrowingRecord getById(Long id) {
-        return borrowingRepository.findById(id)
+        BorrowingRecord br = borrowingRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu mượn"));
+        // Khởi tạo lazy collection trước khi view render.
+        br.getDetails().size();
+        if (br.getStudent() != null && br.getStudent().getProfile() != null) {
+            br.getStudent().getProfile().getFullName();
+        }
+        return br;
     }
 }

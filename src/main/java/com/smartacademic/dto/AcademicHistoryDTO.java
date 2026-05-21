@@ -7,13 +7,10 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 
-/**
- * DTO cho CORE-07: Hồ sơ học tập liên kết (kết quả JOIN phức tạp)
- */
+/** Một mục trong hồ sơ học tập của sinh viên (kết quả JOIN phức tạp). */
 @Data
 public class AcademicHistoryDTO {
 
-    // Thông tin buổi tư vấn
     private Long sessionId;
     private LocalDate sessionDate;
     private LocalTime startTime;
@@ -21,20 +18,17 @@ public class AcademicHistoryDTO {
     private SessionStatus status;
     private String note;
 
-    // Thông tin giảng viên
     private Long lecturerId;
     private String lecturerName;
     private String lecturerCode;
     private String department;
     private String specialization;
 
-    // Đánh giá năng lực
     private Integer skillScore;
     private Integer attitudeScore;
     private String comments;
     private String recommendations;
 
-    // Danh sách thiết bị đã mượn
     private List<BorrowedEquipmentDTO> borrowedEquipments;
     private String borrowingStatus;
 

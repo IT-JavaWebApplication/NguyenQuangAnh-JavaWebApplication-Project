@@ -1,51 +1,229 @@
 <!DOCTYPE html>
-<!-- File: src/main/resources/templates/fragments/layout.html
-     Thymeleaf layout fragment — sidebar + topbar dùng chung cho mọi trang -->
-<html xmlns:th="http://www.thymeleaf.org"
-      th:fragment="html">
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head>
     <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title th:text="${pageTitle} + ' — LabNexus'">LabNexus</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com"/>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
-    <link rel="stylesheet" th:href="@{/css/styles.css}"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <title>Smart Academic</title>
 </head>
 <body>
 
-<div class="app-shell">
+<!-- Fragment <head> chung (đặt tên pageHead để tránh trùng tag HTML <head>). -->
+<th:block th:fragment="pageHead(title)">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${title} + ' — Smart Academic'">Smart Academic</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+    <link rel="stylesheet" th:href="@{/css/app.css}"/>
+</th:block>
 
-    <!-- ═══ SIDEBAR ════════════════════════════════════════════ -->
-    <aside class="sidebar" th:fragment="sidebar(activeMenu, userRole)">
-        <div class="sidebar-brand">
-            <h2>Rikkei Lab</h2>
+<!-- Sidebar điều hướng theo role (STUDENT / LECTURER / ADMIN). -->
+<aside th:fragment="sidebar(role, active)"
+       class="sidebar w-64 min-h-screen flex flex-col fixed top-0 left-0 z-30">
+
+    <div class="px-6 py-5 border-b border-slate-800">
+        <a th:href="@{/}" class="flex items-center gap-3 text-white">
+            <div class="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+                <i class="fa-solid fa-graduation-cap text-lg"></i>
+            </div>
+            <div>
+                <div class="font-bold text-sm leading-tight">Smart Academic</div>
+                <div class="text-[10px] text-slate-400 uppercase tracking-wider">Lab Support</div>
+            </div>
+        </a>
+    </div>
+
+    <nav class="flex-1 px-3 py-4 space-y-1 text-sm">
+        <!-- STUDENT -->
+        <th:block th:if="${role == 'STUDENT'}">
+            <a th:href="@{/student/dashboard}" th:classappend="${active == 'dashboard'} ? 'active' : ''"
+               class="flex items-center gap-3 px-4 py-2.5 rounded-lg">
+                <i class="fa-solid fa-gauge-high w-5"></i> Bảng điều khiển
+            </a>
+            <a th:href="@{/student/booking}" th:classappend="${active == 'booking'} ? 'active' : ''"
+               class="flex items-center gap-3 px-4 py-2.5 rounded-lg">
+                <i class="fa-solid fa-calendar-plus w-5"></i> Đặt lịch tư vấn
+            </a>
+            <a th:href="@{/student/history}" th:classappend="${active == 'history'} ? 'active' : ''"
+               class="flex items-center gap-3 px-4 py-2.5 rounded-lg">
+                <i class="fa-solid fa-clock-rotate-left w-5"></i> Hồ sơ học tập
+            </a>
+            <a th:href="@{/payment/history}" th:classappend="${active == 'payments'} ? 'active' : ''"
+               class="flex items-center gap-3 px-4 py-2.5 rounded-lg">
+                <i class="fa-solid fa-receipt w-5"></i> Lịch sử thanh toán
+            </a>
+            <a th:href="@{/student/profile}" th:classappend="${active == 'profile'} ? 'active' : ''"
+               class="flex items-center gap-3 px-4 py-2.5 rounded-lg">
+                <i class="fa-solid fa-user w-5"></i> Hồ sơ cá nhân
+            </a>
+        </th:block>
+
+        <!-- LECTURER -->
+        <th:block th:if="${role == 'LECTURER'}">
+            <a th:href="@{/lecturer/dashboard}" th:classappend="${active == 'dashboard'} ? 'active' : ''"
+               class="flex items-center gap-3 px-4 py-2.5 rounded-lg">
+                <i class="fa-solid fa-gauge-high w-5"></i> Lịch tư vấn
+            </a>
+            <a th:href="@{/lecturer/profile}" th:classappend="${active == 'profile'} ? 'active' : ''"
+               class="flex items-center gap-3 px-4 py-2.5 rounded-lg">
+                <i class="fa-solid fa-user w-5"></i> Hồ sơ giảng viên
+            </a>
+        </th:block>
+
+        <!-- ADMIN -->
+        <th:block th:if="${role == 'ADMIN'}">
+            <a th:href="@{/admin/dashboard}" th:classappend="${active == 'dashboard'} ? 'active' : ''"
+               class="flex items-center gap-3 px-4 py-2.5 rounded-lg">
+                <i class="fa-solid fa-gauge-high w-5"></i> Tổng quan
+            </a>
+            <a th:href="@{/admin/equipment}" th:classappend="${active == 'equipment'} ? 'active' : ''"
+               class="flex items-center gap-3 px-4 py-2.5 rounded-lg">
+                <i class="fa-solid fa-screwdriver-wrench w-5"></i> Quản lý thiết bị
+            </a>
+            <a th:href="@{/admin/borrowing}" th:classappend="${active == 'borrowing'} ? 'active' : ''"
+               class="flex items-center gap-3 px-4 py-2.5 rounded-lg">
+                <i class="fa-solid fa-clipboard-check w-5"></i> Cấp phát thiết bị
+            </a>
+            <a th:href="@{/admin/statistics}" th:classappend="${active == 'statistics'} ? 'active' : ''"
+               class="flex items-center gap-3 px-4 py-2.5 rounded-lg">
+                <i class="fa-solid fa-chart-pie w-5"></i> Thống kê chi tiết
+            </a>
+        </th:block>
+    </nav>
+
+    <div class="px-4 py-4 border-t border-slate-800">
+        <form th:action="@{/auth/logout}" method="post">
+            <button type="submit"
+                    class="w-full flex items-center gap-3 px-4 py-2.5 rounded-lg text-slate-300 hover:bg-red-500/10 hover:text-red-300 transition-colors">
+                <i class="fa-solid fa-right-from-bracket w-5"></i> Đăng xuất
+            </button>
+        </form>
+    </div>
+</aside>
+
+<!-- Topbar: tiêu đề trang + thông tin user đang đăng nhập. -->
+<header th:fragment="topbar(title)"
+        class="bg-white border-b border-slate-200 px-8 py-4 sticky top-0 z-20">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-xl font-bold text-slate-900" th:text="${title}">Trang</h1>
+            <p class="text-xs text-slate-500" th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy')}">Hôm nay</p>
         </div>
-
-        <nav th:if="${userRole == 'STUDENT'}">
-            <a th:href="@{/student/dashboard}" th:classappend="${activeMenu == 'dashboard'} ? 'active' : ''" class="nav-item">
-                <i class="fa-solid fa-chart-pie"></i> Bảng điều khiển
-            </a>
-            <a th:href="@{/student/book}" th:classappend="${activeMenu == 'book'} ? 'active' : ''" class="nav-item">
-                <i class="fa-solid fa-calendar-plus"></i> Đặt lịch tư vấn
-            </a>
-            <a th:href="@{/student/history}" th:classappend="${activeMenu == 'history'} ? 'active' : ''" class="nav-item">
-                <i class="fa-solid fa-clock-rotate-left"></i> Lịch sử học tập & Mượn thiết bị
-            </a>
-            <a th:href="@{/profile}" th:classappend="${activeMenu == 'profile'} ? 'active' : ''" class="nav-item">
-                <i class="fa-solid fa-user"></i> Hồ sơ cá nhân
-            </a>
-        </nav>
-
-        <div class="sidebar-footer">
-            <form th:action="@{/auth/logout}" method="post">
-                <button type="submit" class="nav-item btn-logout">
-                    <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
-                </button>
-            </form>
+        <div class="flex items-center gap-3">
+            <div class="text-right hidden sm:block">
+                <div class="text-sm font-semibold text-slate-900"
+                     th:text="${session.currentUser != null ? session.currentUser.username : 'Guest'}">Username</div>
+                <div class="text-xs text-slate-500"
+                     th:text="${session.currentUser != null ? session.currentUser.role.displayName : ''}">Role</div>
+            </div>
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-blue-700 text-white flex items-center justify-center font-bold uppercase"
+                 th:text="${session.currentUser != null ? #strings.substring(session.currentUser.username, 0, 1) : 'U'}">U</div>
         </div>
-    </aside>
+    </div>
+</header>
 
-</div><!-- end app-shell placeholder -->
+<!-- Flash message (thành công / lỗi) đọc từ RedirectAttributes. -->
+<div th:fragment="flash">
+    <div th:if="${successMsg}" class="flash flash-success">
+        <i class="fa-solid fa-circle-check mr-2"></i><span th:text="${successMsg}"></span>
+    </div>
+    <div th:if="${errorMsg}" class="flash flash-error">
+        <i class="fa-solid fa-circle-exclamation mr-2"></i><span class="whitespace-pre-line" th:text="${errorMsg}"></span>
+    </div>
+</div>
+
+<!--
+  Modal xác nhận (thay cho window.confirm).
+  Trên <form> truyền:
+    data-confirm           (nội dung)
+    data-confirm-title     (tiêu đề)
+    data-confirm-ok        (label nút OK)
+    data-confirm-style     ("danger" | "primary")
+  Trang cần include fragment này 1 lần ở cuối body.
+-->
+<th:block th:fragment="confirmModal">
+    <div id="appConfirmModal" class="app-modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="appConfirmTitle">
+        <div class="app-modal-card">
+            <div id="appConfirmIcon" class="app-modal-icon app-modal-icon--warning">
+                <i class="fa-solid fa-circle-exclamation"></i>
+            </div>
+            <h3 id="appConfirmTitle" class="app-modal-title">Xác nhận</h3>
+            <p id="appConfirmMessage" class="app-modal-text"></p>
+            <div class="app-modal-actions">
+                <button type="button" id="appConfirmCancel" class="app-btn-ghost">Huỷ</button>
+                <button type="button" id="appConfirmOk" class="app-btn-danger">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        (function () {
+            const backdrop = document.getElementById('appConfirmModal');
+            if (!backdrop || backdrop.dataset.bound === '1') return;
+            backdrop.dataset.bound = '1';
+
+            const iconEl  = document.getElementById('appConfirmIcon');
+            const titleEl = document.getElementById('appConfirmTitle');
+            const msgEl   = document.getElementById('appConfirmMessage');
+            const okBtn   = document.getElementById('appConfirmOk');
+            const noBtn   = document.getElementById('appConfirmCancel');
+            let pending = null;
+
+            function styleFor(kind) {
+                if (kind === 'primary') {
+                    iconEl.className = 'app-modal-icon app-modal-icon--primary';
+                    iconEl.innerHTML = '<i class="fa-solid fa-circle-question"></i>';
+                    okBtn.className  = 'app-btn-primary';
+                } else {
+                    iconEl.className = 'app-modal-icon app-modal-icon--warning';
+                    iconEl.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+                    okBtn.className  = 'app-btn-danger';
+                }
+            }
+
+            function openModal(form) {
+                pending = form;
+                titleEl.textContent = form.dataset.confirmTitle || 'Xác nhận';
+                msgEl.textContent   = form.dataset.confirm || 'Bạn có chắc muốn thực hiện thao tác này?';
+                okBtn.textContent   = form.dataset.confirmOk || 'Xác nhận';
+                styleFor(form.dataset.confirmStyle || 'danger');
+                backdrop.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                setTimeout(function () { okBtn.focus(); }, 50);
+            }
+
+            function closeModal() {
+                backdrop.classList.add('hidden');
+                document.body.style.overflow = '';
+                pending = null;
+            }
+
+            okBtn.addEventListener('click', function () {
+                if (pending) {
+                    const f = pending;
+                    pending = null;
+                    f.dataset.confirmed = '1';
+                    f.submit();
+                    closeModal();
+                }
+            });
+            noBtn.addEventListener('click', closeModal);
+            backdrop.addEventListener('click', function (e) {
+                if (e.target === backdrop) closeModal();
+            });
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape' && !backdrop.classList.contains('hidden')) closeModal();
+            });
+
+            document.addEventListener('submit', function (e) {
+                const f = e.target;
+                if (f.matches && f.matches('form[data-confirm]') && f.dataset.confirmed !== '1') {
+                    e.preventDefault();
+                    openModal(f);
+                }
+            }, true);
+        })();
+    </script>
+</th:block>
+
 </body>
 </html>

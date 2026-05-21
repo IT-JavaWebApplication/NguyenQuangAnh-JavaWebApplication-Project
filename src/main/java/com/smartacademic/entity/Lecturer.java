@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import jakarta.persistence.*;
+import java.math.BigDecimal;
 
 @Entity
 @Table(name = "lecturers")
@@ -32,4 +32,11 @@ public class Lecturer {
 
     @Column(columnDefinition = "TEXT")
     private String bio;
+
+    /**
+     * Phí cho 1 buổi tư vấn (VND). 0 = miễn phí.
+     * Sinh viên cần thanh toán phí này khi đặt lịch.
+     */
+    @Column(name = "session_fee", nullable = false, precision = 12, scale = 0)
+    private BigDecimal sessionFee = BigDecimal.ZERO;
 }

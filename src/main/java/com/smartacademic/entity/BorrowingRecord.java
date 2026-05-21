@@ -1,10 +1,12 @@
 package com.smartacademic.entity;
 
 import com.smartacademic.enums.BorrowingStatus;
+import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
-import jakarta.persistence.*;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +15,7 @@ import java.util.List;
 @Table(name = "borrowing_records")
 @Data
 @NoArgsConstructor
+@ToString(exclude = {"session", "student", "details"})
 public class BorrowingRecord {
 
     @Id
@@ -20,7 +23,7 @@ public class BorrowingRecord {
     private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "session_id", nullable = false)
+    @JoinColumn(name = "session_id", nullable = false, unique = true)
     private MentoringSession session;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -36,6 +39,10 @@ public class BorrowingRecord {
 
     @Column(name = "returned_at")
     private LocalDateTime returnedAt;
+
+    /** Hạn trả thiết bị; cron job hằng ngày sẽ chuyển status sang OVERDUE nếu quá hạn. */
+    @Column(name = "due_date")
+    private LocalDate dueDate;
 
     @Column(name = "admin_note", columnDefinition = "TEXT")
     private String adminNote;

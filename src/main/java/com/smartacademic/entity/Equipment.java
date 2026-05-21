@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -34,6 +34,13 @@ public class Equipment {
 
     @Column(length = 50)
     private String unit = "Cái";
+
+    /**
+     * Phí đặt cọc bắt buộc khi mượn thiết bị này (VND).
+     * 0 = thiết bị không yêu cầu đặt cọc.
+     */
+    @Column(name = "deposit_amount", nullable = false, precision = 12, scale = 0)
+    private BigDecimal depositAmount = BigDecimal.ZERO;
 
     @Column(name = "is_active")
     private Boolean isActive = true;
