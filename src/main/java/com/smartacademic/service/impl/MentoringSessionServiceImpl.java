@@ -61,8 +61,8 @@ public class MentoringSessionServiceImpl implements MentoringSessionService {
         session.setEndTime(dto.getEndTime());
         session.setNote(dto.getNote());
 
-        // Nếu lecturer có session_fee > 0 → trạng thái PENDING_PAYMENT (chờ thanh toán),
-        // ngược lại miễn phí → chuyển luôn sang PENDING (chờ giảng viên xác nhận).
+        //Nếu lecturer có session_fee > 0 → trạng thái PENDING_PAYMENT (chờ thanh toán)
+        //ngược lại miễn phí → chuyển luôn sang PENDING (chờ giảng viên xác nhận).
         java.math.BigDecimal fee = java.math.BigDecimal.ZERO;
         if (lecturer.getLecturerInfo() != null && lecturer.getLecturerInfo().getSessionFee() != null) {
             fee = lecturer.getLecturerInfo().getSessionFee();
@@ -156,7 +156,7 @@ public class MentoringSessionServiceImpl implements MentoringSessionService {
         return ms;
     }
 
-    /** Hồ sơ học thuật của sinh viên: JOIN sessions + evaluation + borrowingRecord. */
+    //Hồ sơ học thuật của sinh viên: JOIN sessions + evaluation + borrowingRecord.
     @Override
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")

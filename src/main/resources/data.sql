@@ -1,13 +1,9 @@
 -- ============================================================
 -- SEED DATA - Smart Academic Lab Support Platform
--- Lưu ý: USERS/LECTURERS/SESSIONS/EVAL/BORROWING được seed
--- bằng DataSeeder (CommandLineRunner) để mật khẩu được hash đúng.
--- File này chỉ seed các bảng nền: departments, lab_room_types, equipments.
--- ============================================================
+-- USERS/LECTURERS/SESSIONS/EVAL/BORROWING được seed bằng DataSeeder (CommandLineRunner) để mật khẩu được hash đúng.
+--  seed các bảng nền: departments, lab_room_types, equipments.
 
--- ============================================================
 -- LAB ROOM TYPES (seed)
--- ============================================================
 INSERT IGNORE INTO lab_room_types (id, code, name, capacity, description) VALUES
     (1, 'LAB_LT',    'Phòng Lab Lập trình',   30, 'Phòng thực hành lập trình với máy tính cấu hình cao'),
     (2, 'LAB_MANG',  'Phòng Lab Mạng',        24, 'Phòng thực hành hệ thống mạng & thiết bị Cisco'),
@@ -15,18 +11,14 @@ INSERT IGNORE INTO lab_room_types (id, code, name, capacity, description) VALUES
     (4, 'LAB_AI',    'Phòng Lab AI/ML',       25, 'Phòng thực hành trí tuệ nhân tạo - GPU server'),
     (5, 'LAB_AN',    'Phòng Lab An toàn TT',  20, 'Phòng thực hành an toàn thông tin, pentest');
 
--- ============================================================
 -- DEPARTMENTS (seed)
--- ============================================================
 INSERT IGNORE INTO departments (id, code, name, description, is_active) VALUES
     (1, 'CNTT', 'Công nghệ thông tin',     'Khoa Công nghệ thông tin & Truyền thông',  1),
     (2, 'ATTT', 'An toàn thông tin',       'Khoa An toàn thông tin',                   1),
     (3, 'KTPM', 'Kỹ thuật phần mềm',       'Khoa Kỹ thuật phần mềm',                   1),
     (4, 'KHMT', 'Khoa học máy tính',       'Khoa Khoa học máy tính & AI',              1);
 
--- ============================================================
 -- EQUIPMENTS (seed)
--- ============================================================
 INSERT IGNORE INTO equipments (id, code, name, description, quantity, available, unit, deposit_amount, is_active, created_at, updated_at) VALUES
     (1, 'EQ-PC-01',      'Máy tính Dell OptiPlex 7090', 'PC i7-11700, 16GB RAM, 512GB SSD',     30, 28, 'Bộ',       500000, 1, NOW(), NOW()),
     (2, 'EQ-RT-01',      'Router Cisco 2911',           'Thiết bị thực hành mạng CCNA',         10,  8, 'Thiết bị', 200000, 1, NOW(), NOW()),

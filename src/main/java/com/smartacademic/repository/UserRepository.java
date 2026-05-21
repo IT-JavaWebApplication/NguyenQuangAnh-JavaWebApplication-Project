@@ -1,6 +1,8 @@
 package com.smartacademic.repository;
 
 import com.smartacademic.entity.User;
+import org.springframework.data.domain.Sort;
+
 import java.util.List;
 import java.util.Optional;
 
