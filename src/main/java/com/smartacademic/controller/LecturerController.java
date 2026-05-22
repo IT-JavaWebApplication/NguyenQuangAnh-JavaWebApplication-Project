@@ -126,7 +126,8 @@ public class LecturerController {
         dto.setSessionId(id);
 
         model.addAttribute("user", user);
-        model.addAttribute("session", sess);
+        // Tránh dùng key "session" vì Thymeleaf đã reserve cho HttpSession.
+        model.addAttribute("sess", sess);
         model.addAttribute("equipments", equipments);
         if (!model.containsAttribute("evaluationDTO")) {
             model.addAttribute("evaluationDTO", dto);
@@ -146,7 +147,7 @@ public class LecturerController {
 
         if (result.hasErrors()) {
             User user = getCurrentUser(session);
-            model.addAttribute("session", mentoringSessionService.getSessionById(id));
+            model.addAttribute("sess", mentoringSessionService.getSessionById(id));
             model.addAttribute("equipments", equipmentService.getAllActive());
             model.addAttribute("user", user);
             model.addAttribute("activePage", "dashboard");

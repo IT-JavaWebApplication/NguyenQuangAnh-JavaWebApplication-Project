@@ -17,25 +17,25 @@
         <div class="app-card p-6 mb-6">
             <div class="flex justify-between items-start">
                 <div>
-                    <div class="text-xs text-slate-500 mb-1">Buổi tư vấn #<span th:text="${session.id}"></span></div>
+                    <div class="text-xs text-slate-500 mb-1">Buổi tư vấn #<span th:text="${sess.id}"></span></div>
                     <h2 class="text-xl font-bold text-slate-900"
-                        th:text="${session.student.profile != null ? session.student.profile.fullName : session.student.username}">SV</h2>
-                    <div class="text-sm text-slate-500 mt-1" th:text="${session.student.email}">email</div>
+                        th:text="${sess.student.profile != null ? sess.student.profile.fullName : sess.student.username}">SV</h2>
+                    <div class="text-sm text-slate-500 mt-1" th:text="${sess.student.email}">email</div>
                 </div>
                 <div class="text-right">
                     <div class="font-semibold text-slate-700"
-                         th:text="${#temporals.format(session.sessionDate, 'EEEE, dd/MM/yyyy')}">Date</div>
+                         th:text="${#temporals.format(sess.sessionDate, 'EEEE, dd/MM/yyyy')}">Date</div>
                     <div class="text-sm text-slate-500"
-                         th:text="${#temporals.format(session.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(session.endTime, 'HH:mm')}">Time</div>
+                         th:text="${#temporals.format(sess.startTime, 'HH:mm')} + ' - ' + ${#temporals.format(sess.endTime, 'HH:mm')}">Time</div>
                 </div>
             </div>
-            <div th:if="${session.note}" class="mt-4 p-3 bg-slate-50 border-l-4 border-blue-400 text-sm text-slate-700">
+            <div th:if="${sess.note}" class="mt-4 p-3 bg-slate-50 border-l-4 border-blue-400 text-sm text-slate-700">
                 <i class="fa-solid fa-comment-dots mr-1 text-blue-500"></i>
-                <span th:text="${session.note}"></span>
+                <span th:text="${sess.note}"></span>
             </div>
         </div>
 
-        <form th:action="@{/lecturer/sessions/{id}/evaluate(id=${session.id})}" th:object="${evaluationDTO}" method="post" class="space-y-6">
+        <form th:action="@{/lecturer/sessions/{id}/evaluate(id=${sess.id})}" th:object="${evaluationDTO}" method="post" class="space-y-6">
 
             <!-- Evaluation scores -->
             <div class="app-card p-6">
